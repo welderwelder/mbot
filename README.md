@@ -7,4 +7,4 @@ message sender id.
 
 logging into file
 
-log file upload to google drive by gdrive
+log file upload to google drive by gdrive script daily
