@@ -8,12 +8,12 @@ bot = telegram.Bot(token=tokenbot.token_bot)        # .gitignore !
 cnfg_file = "cnfg.txt"
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)               # up level setting for logger obj
+logger.setLevel(logging.INFO)                       # up level setting for logger obj
 
 formatter = logging.Formatter('%(asctime)s:%(name)s:   %(message)s')
 
 file_handler = logging.FileHandler('mbot.log')      # .gitignore !
-# file_handler.setLevel(logging.ERROR)     # if want to log error and above ==> .ERROR
+# file_handler.setLevel(logging.ERROR)              # if want to log error and above ==> .ERROR
 file_handler.setFormatter(formatter)
 
 stream_handler = logging.StreamHandler()
@@ -26,7 +26,7 @@ logger.addHandler(stream_handler)
 # ___________________________________________________________________________
 def chk_f_sw_i_run():
 
-    try:                                # if os.path.exists(cnfg_file):
+    try:                                    # if os.path.exists(cnfg_file):
         f = open(cnfg_file, "r")
         f_rd_ln = f.readline()
         f.close()
@@ -40,10 +40,9 @@ def chk_f_sw_i_run():
 # ___________________________________________________________________________
 def upd_f_sw_i_run(msg_id_last, msg_msg):
 
-    try:                                # if os.path.exists(cnfg_file):
-        f = open(cnfg_file, "r+")       # r+ The stream is positioned at the beginning of file  # f.seek(0)
+    try:                                    # if os.path.exists(cnfg_file):
+        f = open(cnfg_file, "r+")           # r+ The stream is positioned at the beginning of file  # f.seek(0)
         f.write(str(msg_id_last) + "\n")
-        # f.write(str(msg_msg))
         logger.info(str(msg_msg))
         f.close()
     except Exception as e:
@@ -92,12 +91,12 @@ def cre_msg(cre_from_name, cre_msg_txt, cre_chat_id):
 # ___________________________________________________________________________
 def main():
     running = True
-    # skippy = False ?
 
     logger.info(bot)
 
     f_rd = chk_f_sw_i_run()
     logger.info(f_rd)
+
 
     while running:
         time.sleep(0.9)
@@ -109,9 +108,12 @@ def main():
             msg_id = msg.message_id         # print(str(msg_id))
             msg_txt = msg.text
             skippy = False
+        except telegram.error.TimedOut:
+            skippy = True
+            print 'Timed out, no logged, {:%d.%m.%Y %H:%M:%S}'.format(datetime.now())  # str(datetime.now())[0:19]
         except Exception as e:
             skippy = True
-            logger.info(e)      # logger.info('   skippy True ' + str(datetime.now())[0:19])
+            logger.info(e)  # logger.info('   skippy True ' + str(datetime.now())[0:19])
 
         if (not skippy) and (msg_id > int(f_rd)):
             logger.info("cur message: msg_id=" + str(msg_id) + ", chat_id=" + str(cht_id) + ", text=" + msg_txt
