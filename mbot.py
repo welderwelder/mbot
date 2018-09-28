@@ -110,7 +110,10 @@ def main():
             skippy = False
         except telegram.error.TimedOut:
             skippy = True
-            print 'Timed out, no logged, {:%d.%m.%Y %H:%M:%S}'.format(datetime.now())  # str(datetime.now())[0:19]
+            print 'Timed out, NOT logged, {:%d.%m.%Y %H:%M:%S}'.format(datetime.now())  # str(datetime.now())[0:19]
+        except IndexError:
+            skippy = True
+            print 'Index Error: no messages on Telegram server(?). NOT logged, {:%d.%m.%Y %H:%M:%S}'.format(datetime.now())  # str(datetime.now())[0:19]
         except Exception as e:
             skippy = True
             logger.info(e)  # logger.info('   skippy True ' + str(datetime.now())[0:19])
