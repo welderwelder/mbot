@@ -65,7 +65,7 @@ def cre_msg(cre_from_name, cre_msg_txt, cre_chat_id):
              ]
 
     search_list = ['who', 'what', 'why', 'how', '.*\?', 'where']
-    if cre_msg_txt == 'info'  or  cre_msg_txt == 'INFO'  or  cre_msg_txt == 'Info':
+    if cre_msg_txt == 'info' or cre_msg_txt == 'INFO' or cre_msg_txt == 'Info':
         sw_info = True
     elif (
           (re.compile('|'.join(search_list), re.IGNORECASE).search(cre_msg_txt)) or
@@ -91,6 +91,9 @@ def cre_msg(cre_from_name, cre_msg_txt, cre_chat_id):
 # ___________________________________________________________________________
 def main():
     running = True
+
+    logger.info('* * * * * * * * * * * * * * START * * * * * * * * * * * * * * '
+                '* {:%d.%m.%Y %H:%M:%S}'.format(datetime.now()))    # reference for RESTARTING..
 
     logger.info(bot)
 
