@@ -2,6 +2,7 @@ import telegram, time, sys, os, re, platform
 from datetime import datetime
 import logging
 import tokenbot                                     # .gitignore !
+import WazeRouteCalculator
 
 bot = telegram.Bot(token=tokenbot.token_bot)        # .gitignore !
 
@@ -21,6 +22,11 @@ stream_handler.setFormatter(formatter)
 
 logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
+
+
+from_address = tokenbot.from_address_main
+# to_address = tokenbot.to_address_main
+region = 'IL'
 
 
 # ___________________________________________________________________________
@@ -56,6 +62,26 @@ def cre_msg(cre_from_name, cre_msg_txt, cre_chat_id):
     if cre_chat_id == tokenbot.boss_id:     # boss_id~=123456789
         logger.info("Boss is here!")
 
+
+    #
+    # if cre_chat_id in [tokenbot.boss_id, tokenbot.test_id]:
+    sw_wz = False
+    if re.match("wz", cre_msg_txt, flags=re.I):
+        # print('boss---wz')
+        sw_wz = True
+        if cre_chat_id == tokenbot.boss_id:
+            to_address = tokenbot.to_address_main
+        elif cre_chat_id == tokenbot.test_id:
+            to_address = tokenbot.to_address_test
+
+        route = WazeRouteCalculator.WazeRouteCalculator(from_address, to_address, region)
+        try:
+            rt_tm, rt_dist = route.calc_route_info()    # tuple
+        except WazeRouteCalculator.WRCError as err:
+            logger.info(err)
+    #
+
+
     rules_heb_questn_str = [
                 u"\u05d0\u05d9\u05da" in cre_msg_txt,      # eyh     unicode
                 u"\u05DE\u05D4"       in cre_msg_txt,      # ma
@@ -74,7 +100,7 @@ def cre_msg(cre_from_name, cre_msg_txt, cre_chat_id):
         logger.info("rule!")
         cre_msg_txt_rule = "serving  MATAF TAXI reservations, type `info` for reservation instructions, "
     else:
-        cre_msg_txt_rule = 'type `info` for reservation instructions,'
+        cre_msg_txt_rule = 'type `info` for reservation instructions, `wz` to get HOME:] '
 
     if sw_info:
         cre_msg_txt_new = ("reservation structure:\n    Source \n      dd.mm.yy  HH:MM \n    Dest \n " +
@@ -83,6 +109,13 @@ def cre_msg(cre_from_name, cre_msg_txt, cre_chat_id):
     else:
         cre_msg_txt_new = ("hello " + cre_from_name + " iam a mishkas robot  **" + platform.node() + '**, ' +
                            cre_msg_txt_rule + "your original msg=" + cre_msg_txt)
+
+    if sw_wz:
+        # rt_tm_dist = 'Time {%.2f} minutes, distance {%.2f} km.'.format(rt_tm, rt_dist)
+        rt_tm_dist = 'Time {:.0f} minutes, distance {:.0f} km.'.format(rt_tm, rt_dist)
+        cre_msg_txt_new = ("FROM:  " + from_address + "\nTO:  "+ to_address + "\n" +
+                           rt_tm_dist)
+        logger.info(cre_msg_txt_new)
 
     return cre_msg_txt_new
 
