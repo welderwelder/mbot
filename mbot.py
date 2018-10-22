@@ -1,12 +1,15 @@
 import telegram, time, sys, os, re, platform
 from datetime import datetime
 import logging
-import tokenbot                                     # .gitignore !
+import tokenbot                     # .gitignore !
 import WazeRouteCalculator
+import dfu                          # Data_File_Use: strings constants etc.
 
-bot = telegram.Bot(token=tokenbot.token_bot)        # .gitignore !
+reload(sys)                         # after class-ing: err ascii decode heb str
+sys.setdefaultencoding('UTF-8')     # still heb strings log lft->rgt reversed(?)
 
 cnfg_file = "cnfg.txt"
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)                       # up level setting for logger obj
@@ -24,148 +27,176 @@ logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
 
+#
 from_address = tokenbot.from_address_main
 # to_address = tokenbot.to_address_main
 region = 'IL'
 
 
+#
+class Robot:
+    def __init__(self, tokn):
+        self.token = tokn
+        self.bot = telegram.Bot(token=self.token)
+        logger.info("bot init: " + str(self.bot))
+
+    # def get_bot(self):
+    #     return self.bot
+
+    def get_lst_msg_bot(self):
+        self.skippy = True
+
+        try:
+            self.lst_msg = self.bot.get_updates()[-1].message
+            self.cht_id = self.lst_msg.chat_id
+            self.from_name = self.lst_msg.chat["first_name"]
+            self.msg_id = self.lst_msg.message_id
+            self.msg_txt = self.lst_msg.text
+            self.skippy = False
+        except telegram.error.TimedOut:
+            print dfu.str_time_out.format(datetime.now())
+        except IndexError:
+            print dfu.str_idx_err.format(datetime.now())
+        except Exception as e:
+            logger.info(e)
+
+        return self.lst_msg
+
+    def snd_msg(self, cht_id_to, msg_txt):
+        try:
+            self.bot.send_message(chat_id=cht_id_to, text=msg_txt)
+        except Exception as e:
+            logger.info(e)
+
+
+#
+#
+#
+#
 # ___________________________________________________________________________
-def chk_f_sw_i_run():
+def get_f_lst_id():
 
     try:                                    # if os.path.exists(cnfg_file):
         f = open(cnfg_file, "r")
         f_rd_ln = f.readline()
+        logger.info("get_f_lst_id: " +str(f_rd_ln))
         f.close()
     except Exception as e:
         logger.exception(e)
-        sys.exit('ERROR:' + cnfg_file + "  ---> READ file does not existsss!!!!")
 
     return f_rd_ln
 
 
 # ___________________________________________________________________________
-def upd_f_sw_i_run(msg_id_last, msg_msg):
+def upd_f_lst_id(msg_id_last, msg_msg):
 
-    try:                                    # if os.path.exists(cnfg_file):
+    try:
         f = open(cnfg_file, "r+")           # r+ The stream is positioned at the beginning of file  # f.seek(0)
         f.write(str(msg_id_last) + "\n")
-        logger.info(str(msg_msg))
+        logger.info("upd_f_lst_id: " + str(msg_msg))
         f.close()
     except Exception as e:
         logger.exception(e)
-        sys.exit("ERROR:" + cnfg_file + "  --->    WRITE  file does not existsss!!!!")
+        sys.exit()                   # stop run - erroneous upd but level='info'
 
 
+#
+#
+#
+#
 # ___________________________________________________________________________
 def cre_msg(cre_from_name, cre_msg_txt, cre_chat_id):
     sw_info = False
     if cre_chat_id == tokenbot.boss_id:     # boss_id~=123456789
         logger.info("Boss is here!")
 
-
-    #
     # if cre_chat_id in [tokenbot.boss_id, tokenbot.test_id]:
     sw_wz = False
-    if re.match("wz", cre_msg_txt, flags=re.I):
-        # print('boss---wz')
+    if re.compile('|'.join(dfu.str_wz_srch_lst), re.IGNORECASE).search(cre_msg_txt):
         sw_wz = True
         if cre_chat_id == tokenbot.boss_id:
             to_address = tokenbot.to_address_main
         elif cre_chat_id == tokenbot.test_id:
             to_address = tokenbot.to_address_test
 
-        route = WazeRouteCalculator.WazeRouteCalculator(from_address, to_address, region)
+        route = WazeRouteCalculator.WazeRouteCalculator(from_address,
+                                                        to_address,
+                                                        region
+                                                        )
         try:
             rt_tm, rt_dist = route.calc_route_info()    # tuple
         except WazeRouteCalculator.WRCError as err:
             logger.info(err)
-    #
 
+    rules_heb_qstn_str = [  # example of using rules/any/all:
+                            u"\u05d0\u05d9\u05da"   in cre_msg_txt,  # eyh     unicode
+                            u"\u05DE\u05D4"         in cre_msg_txt,  # ma
+                            u"\u05DC\u05D0\u05DF"   in cre_msg_txt,  # lean
+                            u"\u05DC\u05DE\u05D4"   in cre_msg_txt   # lama
+                            ]
 
-    rules_heb_questn_str = [
-                u"\u05d0\u05d9\u05da" in cre_msg_txt,      # eyh     unicode
-                u"\u05DE\u05D4"       in cre_msg_txt,      # ma
-                u"\u05DC\u05D0\u05DF" in cre_msg_txt,      # lean
-                u"\u05DC\u05DE\u05D4" in cre_msg_txt       # lama
-                # re.match("who", cre_msg_txt, flags=re.I),
-             ]
-
-    search_list = ['who', 'what', 'why', 'how', '.*\?', 'where']
-    if cre_msg_txt == 'info' or cre_msg_txt == 'INFO' or cre_msg_txt == 'Info':
+    # if cre_msg_txt == 'info' or cre_msg_txt == 'INFO' or cre_msg_txt == 'Info':
+    if re.match("info", cre_msg_txt, flags=re.I):
         sw_info = True
-    elif (
-          (re.compile('|'.join(search_list), re.IGNORECASE).search(cre_msg_txt)) or
-           any(rules_heb_questn_str)           # if any(rules_heb_questn_str): #if all(rules_heb_questn_str):
+    elif (   # search list of values in a `big` string
+          (re.compile('|'.join(dfu.str_qstn_srch_lst), re.IGNORECASE).search(cre_msg_txt))
+            or
+           any(rules_heb_qstn_str)
           ):
         logger.info("rule!")
-        cre_msg_txt_rule = "serving  MATAF TAXI reservations, type `info` for reservation instructions, "
+        cre_msg_txt_rule = dfu.str_qstn_rule_y
     else:
-        cre_msg_txt_rule = 'type `info` for reservation instructions, `wz` to get HOME:] '
+        cre_msg_txt_rule = dfu.str_qstn_rule_gen
 
     if sw_info:
-        cre_msg_txt_new = ("reservation structure:\n    Source \n      dd.mm.yy  HH:MM \n    Dest \n " +
-                           "timing always between Source and Dest - so one of the directions is non" +
-                           "-obligatory!")
+        cre_msg_txt_new = dfu.str_rsrv_struct      # reservation structure description
     else:
-        cre_msg_txt_new = ("hello " + cre_from_name + " iam a mishkas robot  **" + platform.node() + '**, ' +
-                           cre_msg_txt_rule + "your original msg=" + cre_msg_txt)
-
+        cre_msg_txt_new = dfu.str_greeting.format(cre_from_name,
+                                                  platform.node(),
+                                                  cre_msg_txt_rule,
+                                                  cre_msg_txt
+                                                  )
     if sw_wz:
-        # rt_tm_dist = 'Time {%.2f} minutes, distance {%.2f} km.'.format(rt_tm, rt_dist)
-        rt_tm_dist = 'Time {:.0f} minutes, distance {:.0f} km.'.format(rt_tm, rt_dist)
-        cre_msg_txt_new = ("FROM:  " + from_address + "\nTO:  "+ to_address + "\n" +
-                           rt_tm_dist)
-        logger.info(cre_msg_txt_new)
+        cre_msg_txt_new = dfu.str_full_tm_dist.format(from_address,
+                                                      to_address,
+                                                      rt_tm,
+                                                      rt_dist
+                                                      )
+        logger.info("cre_msg_txt_new: " + str(cre_msg_txt_new))
 
     return cre_msg_txt_new
 
 
+#
+#
 # ___________________________________________________________________________
 # ___________________________________________________________________________
 def main():
     running = True
 
-    logger.info('* * * * * * * * * * * * * * START * * * * * * * * * * * * * * '
-                '* {:%d.%m.%Y %H:%M:%S}'.format(datetime.now()))    # reference for RESTARTING..
+    logger.info(dfu.str_start)                  # reference for RESTARTING..
 
-    logger.info(bot)
+    r = Robot(tokenbot.token_bot)
 
-    f_rd = chk_f_sw_i_run()
-    logger.info(f_rd)
-
+    lst_id = get_f_lst_id()
 
     while running:
         time.sleep(0.9)
 
-        try:
-            msg = bot.get_updates()[-1].message
-            cht_id = msg.chat_id
-            from_name = msg.chat["first_name"]
-            msg_id = msg.message_id         # print(str(msg_id))
-            msg_txt = msg.text
-            skippy = False
-        except telegram.error.TimedOut:
-            skippy = True
-            print 'Timed out, NOT logged, {:%d.%m.%Y %H:%M:%S}'.format(datetime.now())  # str(datetime.now())[0:19]
-        except IndexError:
-            skippy = True
-            print 'Index Error: no messages on Telegram server(?). NOT logged, {:%d.%m.%Y %H:%M:%S}'.format(datetime.now())  # str(datetime.now())[0:19]
-        except Exception as e:
-            skippy = True
-            logger.info(e)  # logger.info('   skippy True ' + str(datetime.now())[0:19])
+        msg = r.get_lst_msg_bot()
 
-        if (not skippy) and (msg_id > int(f_rd)):
-            logger.info("cur message: msg_id=" + str(msg_id) + ", chat_id=" + str(cht_id) + ", text=" + msg_txt
-                  + ", Name=" + from_name)
+        if (not r.skippy) and (r.msg_id > int(lst_id)):
+            logger.info(dfu.str_is_cur_msg.format(str(r.msg_id),
+                                                  str(r.cht_id),
+                                                  r.msg_txt,
+                                                  r.from_name
+                                                  )
+                        )
 
-            msg_txt_new = cre_msg(from_name, msg_txt, cht_id)
-
-            bot.send_message(chat_id=cht_id, text=msg_txt_new)
-
-            upd_f_sw_i_run(msg_id, msg)
-            f_rd = str(msg_id)
-        # else:
-        #     print(str(msg_id))
+            msg_txt_new = cre_msg(r.from_name, r.msg_txt, r.cht_id)
+            r.snd_msg(r.cht_id, msg_txt_new)
+            upd_f_lst_id(r.msg_id, msg)
+            lst_id = str(r.msg_id)
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
