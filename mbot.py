@@ -1,4 +1,5 @@
 import telegram, time, sys, os, re, platform
+from telegram import ParseMode
 from datetime import datetime
 import logging
 import tokenbot                     # .gitignore !
@@ -28,12 +29,9 @@ logger.addHandler(stream_handler)
 
 
 #
-from_address = tokenbot.from_address_main
-# to_address = tokenbot.to_address_main
-region = 'IL'
-
 
 #
+# ___________________________________________________________________________
 class Robot:
     def __init__(self, tokn):
         self.token = tokn
@@ -45,13 +43,9 @@ class Robot:
 
     def get_lst_msg_bot(self):
         self.skippy = True
-
         try:
             self.lst_msg = self.bot.get_updates()[-1].message
-            self.cht_id = self.lst_msg.chat_id
-            self.from_name = self.lst_msg.chat["first_name"]
-            self.msg_id = self.lst_msg.message_id
-            self.msg_txt = self.lst_msg.text
+            self.lst_msg_id = self.lst_msg.message_id
             self.skippy = False
         except telegram.error.TimedOut:
             print dfu.str_time_out.format(datetime.now())
@@ -62,113 +56,89 @@ class Robot:
 
         return self.lst_msg
 
-    def snd_msg(self, cht_id_to, msg_txt):
+    def snd_msg(self, cht_id_to, msg_txt_new):
         try:
-            self.bot.send_message(chat_id=cht_id_to, text=msg_txt)
+            self.bot.send_message(chat_id=cht_id_to, text=msg_txt_new,
+                                  parse_mode=ParseMode.HTML)
         except Exception as e:
             logger.info(e)
 
+    def get_f_lst_id(self):
+        try:                                    # if os.path.exists(cnfg_file):
+            f = open(cnfg_file, "r")
+            self.f_rd_ln = f.readline()
+            logger.info("get_f_lst_id: " + str(self.f_rd_ln))
+            f.close()
+        except Exception as e:
+            logger.exception(e)
 
-#
-#
-#
-#
-# ___________________________________________________________________________
-def get_f_lst_id():
+        return self.f_rd_ln
 
-    try:                                    # if os.path.exists(cnfg_file):
-        f = open(cnfg_file, "r")
-        f_rd_ln = f.readline()
-        logger.info("get_f_lst_id: " +str(f_rd_ln))
-        f.close()
-    except Exception as e:
-        logger.exception(e)
-
-    return f_rd_ln
-
-
-# ___________________________________________________________________________
-def upd_f_lst_id(msg_id_last, msg_msg):
-
-    try:
-        f = open(cnfg_file, "r+")           # r+ The stream is positioned at the beginning of file  # f.seek(0)
-        f.write(str(msg_id_last) + "\n")
-        logger.info("upd_f_lst_id: " + str(msg_msg))
-        f.close()
-    except Exception as e:
-        logger.exception(e)
-        sys.exit()                   # stop run - erroneous upd but level='info'
-
-
-#
-#
-#
-#
-# ___________________________________________________________________________
-def cre_msg(cre_from_name, cre_msg_txt, cre_chat_id):
-    sw_info = False
-    if cre_chat_id == tokenbot.boss_id:     # boss_id~=123456789
-        logger.info("Boss is here!")
-
-    # if cre_chat_id in [tokenbot.boss_id, tokenbot.test_id]:
-    sw_wz = False
-    if re.compile('|'.join(dfu.str_wz_srch_lst), re.IGNORECASE).search(cre_msg_txt):
-        sw_wz = True
-        if cre_chat_id == tokenbot.boss_id:
-            to_address = tokenbot.to_address_main
-        elif cre_chat_id == tokenbot.test_id:
-            to_address = tokenbot.to_address_test
-
-        route = WazeRouteCalculator.WazeRouteCalculator(from_address,
-                                                        to_address,
-                                                        region
-                                                        )
+    def upd_f_lst_id(self):
         try:
-            rt_tm, rt_dist = route.calc_route_info()    # tuple
-        except WazeRouteCalculator.WRCError as err:
-            logger.info(err)
-
-    rules_heb_qstn_str = [  # example of using rules/any/all:
-                            u"\u05d0\u05d9\u05da"   in cre_msg_txt,  # eyh     unicode
-                            u"\u05DE\u05D4"         in cre_msg_txt,  # ma
-                            u"\u05DC\u05D0\u05DF"   in cre_msg_txt,  # lean
-                            u"\u05DC\u05DE\u05D4"   in cre_msg_txt   # lama
-                            ]
-
-    # if cre_msg_txt == 'info' or cre_msg_txt == 'INFO' or cre_msg_txt == 'Info':
-    if re.match("info", cre_msg_txt, flags=re.I):
-        sw_info = True
-    elif (   # search list of values in a `big` string
-          (re.compile('|'.join(dfu.str_qstn_srch_lst), re.IGNORECASE).search(cre_msg_txt))
-            or
-           any(rules_heb_qstn_str)
-          ):
-        logger.info("rule!")
-        cre_msg_txt_rule = dfu.str_qstn_rule_y
-    else:
-        cre_msg_txt_rule = dfu.str_qstn_rule_gen
-
-    if sw_info:
-        cre_msg_txt_new = dfu.str_rsrv_struct      # reservation structure description
-    else:
-        cre_msg_txt_new = dfu.str_greeting.format(cre_from_name,
-                                                  platform.node(),
-                                                  cre_msg_txt_rule,
-                                                  cre_msg_txt
-                                                  )
-    if sw_wz:
-        cre_msg_txt_new = dfu.str_full_tm_dist.format(from_address,
-                                                      to_address,
-                                                      rt_tm,
-                                                      rt_dist
-                                                      )
-        logger.info("cre_msg_txt_new: " + str(cre_msg_txt_new))
-
-    return cre_msg_txt_new
+            f = open(cnfg_file, "r+")           # r+ The stream is positioned at the beginning of file  # f.seek(0)
+            f.write(str(self.lst_msg_id) + "\n")
+            logger.info("upd_f_lst_id: " + str(self.lst_msg))
+            f.close()
+        except Exception as e:
+            logger.exception(e)
+            sys.exit()                          # stop run - erroneous upd but level='info'
 
 
 #
-#
+# ___________________________________________________________________________
+class Msg:
+    def __init__(self, analyze_msg):
+        # self.sw_msg_wz = False
+        self.from_adrs = tokenbot.from_address_dflt
+        self.to_adrs = tokenbot.to_address_dflt
+
+        self.anlz_msg = analyze_msg
+
+        # self.sw_lst_msg_hi_auth_id = False
+        self.anlz_msg_cht_id = analyze_msg.chat_id
+        if self.anlz_msg_cht_id in tokenbot.hi_auth_id_lst:
+        #     self.sw_anlz_msg_hi_auth_id = True
+            self.from_adrs = tokenbot.from_address_main
+            self.to_adrs = tokenbot.to_address_main
+
+        self.anlz_msg_from_name = analyze_msg.chat["first_name"]
+        self.anlz_msg_id = analyze_msg.message_id
+        self.anlz_msg_txt = analyze_msg.text
+        self.cre_msg_txt_new = '`Default mesage`'
+
+    def analyze_in_msg(self):
+        if re.compile('|'.join(dfu.str_in_cmd_hom + dfu.str_in_cmd_wrk),
+                      re.IGNORECASE).search(self.anlz_msg_txt):
+            # self.sw_msg_wz = True
+            # def cre_route(self):
+            if self.anlz_msg_txt.lower() in dfu.str_in_cmd_wrk:        # swap
+                self.from_adrs, self.to_adrs = self.to_adrs, self.from_adrs
+
+            try:
+                route = WazeRouteCalculator.WazeRouteCalculator(self.from_adrs,
+                                                                self.to_adrs,
+                                                                'IL'    # region
+                                                                )
+                rt_tm, rt_dist = route.calc_route_info()            # tuple
+                self.cre_msg_txt_new = \
+                    dfu.str_full_tm_dist.format(self.from_adrs,
+                                                self.to_adrs,
+                                                rt_tm,
+                                                rt_dist
+                                                )
+            except WazeRouteCalculator.WRCError as err:
+                logger.info(err)
+        elif self.anlz_msg_txt.lower() in dfu.str_qstn_srch_lst:        # case-insensitive
+            self.cre_msg_txt_new = dfu.str_out_cmnds
+        else:
+            self.cre_msg_txt_new = dfu.str_greeting.format(self.anlz_msg_from_name,
+                                                           platform.node(),
+                                                           self.anlz_msg_txt
+                                                           )
+        return self.cre_msg_txt_new
+
+
 # ___________________________________________________________________________
 # ___________________________________________________________________________
 def main():
@@ -178,25 +148,20 @@ def main():
 
     r = Robot(tokenbot.token_bot)
 
-    lst_id = get_f_lst_id()
+    lst_id = r.get_f_lst_id()
 
     while running:
         time.sleep(0.9)
 
-        msg = r.get_lst_msg_bot()
+        m = Msg(r.get_lst_msg_bot())
 
-        if (not r.skippy) and (r.msg_id > int(lst_id)):
-            logger.info(dfu.str_is_cur_msg.format(str(r.msg_id),
-                                                  str(r.cht_id),
-                                                  r.msg_txt,
-                                                  r.from_name
-                                                  )
-                        )
+        if (not r.skippy) and (r.lst_msg_id > int(lst_id)):
 
-            msg_txt_new = cre_msg(r.from_name, r.msg_txt, r.cht_id)
-            r.snd_msg(r.cht_id, msg_txt_new)
-            upd_f_lst_id(r.msg_id, msg)
-            lst_id = str(r.msg_id)
+            r.snd_msg(m.anlz_msg_cht_id, m.analyze_in_msg())
+
+            r.upd_f_lst_id()
+            lst_id = str(r.lst_msg_id)
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
