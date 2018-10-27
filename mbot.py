@@ -28,7 +28,6 @@ logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
 
-#
 
 #
 # ___________________________________________________________________________
@@ -37,20 +36,25 @@ class Robot:
         self.token = tokn
         self.bot = telegram.Bot(token=self.token)
         logger.info("bot init: " + str(self.bot))
+        self.dyn_delay = 0.9
 
     # def get_bot(self):
     #     return self.bot
 
     def get_lst_msg_bot(self):
         self.skippy = True
+        self.lst_msg = 'm'
         try:
             self.lst_msg = self.bot.get_updates()[-1].message
             self.lst_msg_id = self.lst_msg.message_id
             self.skippy = False
+            self.dyn_delay = 0.9
         except telegram.error.TimedOut:
             print dfu.str_time_out.format(datetime.now())
+            self.dyn_delay = 5
         except IndexError:
             print dfu.str_idx_err.format(datetime.now())
+            self.dyn_delay = 10
         except Exception as e:
             logger.info(e)
 
@@ -87,7 +91,7 @@ class Robot:
 
 #
 # ___________________________________________________________________________
-class Msg:
+class A_Msg:
     def __init__(self, analyze_msg):
         # self.sw_msg_wz = False
         self.from_adrs = tokenbot.from_address_dflt
@@ -151,19 +155,19 @@ def main():
     lst_id = r.get_f_lst_id()
 
     while running:
-        time.sleep(0.9)
+        time.sleep(r.dyn_delay)                 # (0.9)
 
-        m = Msg(r.get_lst_msg_bot())
+        r.get_lst_msg_bot()
 
-        if (not r.skippy) and (r.lst_msg_id > int(lst_id)):
+        if (not r.skippy):
+            if r.lst_msg_id > int(lst_id):
+                m = A_Msg(r.lst_msg)
+                r.snd_msg(m.anlz_msg_cht_id, m.analyze_in_msg())
 
-            r.snd_msg(m.anlz_msg_cht_id, m.analyze_in_msg())
+                r.upd_f_lst_id()
+                lst_id = str(r.lst_msg_id)
 
-            r.upd_f_lst_id()
-            lst_id = str(r.lst_msg_id)
-
-
-
+#
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 if __name__ == "__main__":
