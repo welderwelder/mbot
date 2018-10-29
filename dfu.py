@@ -25,12 +25,13 @@ str_idx_err = (
 
 # str_qstn_rule_gen = "type `info` for reservation instructions, `wz` to get HOME:] "
 
-str_qstn_srch_lst = [ # 'who', 'what', 'why', 'how', 'where',
+str_help_cmd_lst = [ # 'who', 'what', 'why', 'how', 'where',
                      '.*\?', 'info', '/info', '/commands', 'commands',
                      '/help', '--help', '-help', 'help']
 
-str_in_cmd_hom = ['/home', 'home']
-str_in_cmd_wrk = ['/work', 'work']
+lst_str_in_cmd_hom = ['/home', 'home']
+lst_str_in_cmd_wrk = ['/work', 'work']
+str_in_cmd_pause = 'pause'
 
 str_out_cmnds = (
                  "<b>`work` - Calc route from home to work </b>\n"
@@ -40,7 +41,7 @@ str_out_cmnds = (
                  )
 
 str_greeting = (
-                "hello {} iam a mishkas robot  ** {} **, your "
+                "hello {} iam a mishkas robot  **{}**, your "
                 "msg=`{}`, type  `info`  to get commands list"
                 )
 

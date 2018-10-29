@@ -43,9 +43,9 @@ class Robot:
 
     def get_lst_msg_bot(self):
         self.skippy = True
-        self.lst_msg = 'm'
         try:
-            self.lst_msg = self.bot.get_updates()[-1].message
+            # self.lst_msg = self.bot.get_updates()[-1].message     # take whole buffer(srvr_max=100) and take last.
+            self.lst_msg = self.bot.get_updates(-1)[0].message      # 'forgets' all but last!
             self.lst_msg_id = self.lst_msg.message_id
             self.skippy = False
             self.dyn_delay = 0.9
@@ -57,8 +57,6 @@ class Robot:
             self.dyn_delay = 10
         except Exception as e:
             logger.info(e)
-
-        return self.lst_msg
 
     def snd_msg(self, cht_id_to, msg_txt_new):
         try:
@@ -93,53 +91,78 @@ class Robot:
 # ___________________________________________________________________________
 class A_Msg:
     def __init__(self, analyze_msg):
-        # self.sw_msg_wz = False
         self.from_adrs = tokenbot.from_address_dflt
         self.to_adrs = tokenbot.to_address_dflt
 
         self.anlz_msg = analyze_msg
 
-        # self.sw_lst_msg_hi_auth_id = False
+        # self.msg_prs_hi_auth_id = False
         self.anlz_msg_cht_id = analyze_msg.chat_id
-        if self.anlz_msg_cht_id in tokenbot.hi_auth_id_lst:
-        #     self.sw_anlz_msg_hi_auth_id = True
-            self.from_adrs = tokenbot.from_address_main
-            self.to_adrs = tokenbot.to_address_main
 
         self.anlz_msg_from_name = analyze_msg.chat["first_name"]
         self.anlz_msg_id = analyze_msg.message_id
         self.anlz_msg_txt = analyze_msg.text
         self.cre_msg_txt_new = '`Default mesage`'
 
+    def calc_route(self):
+        try:
+            route = WazeRouteCalculator.WazeRouteCalculator(self.from_adrs,
+                                                            self.to_adrs,
+                                                            'IL'    # region
+                                                            )
+            rt_tm, rt_dist = route.calc_route_info()  # tuple
+            self.cre_msg_txt_new = \
+                dfu.str_full_tm_dist.format(self.from_adrs,
+                                            self.to_adrs,
+                                            rt_tm,
+                                            rt_dist
+                                            )
+        except WazeRouteCalculator.WRCError as err:
+            logger.info(err)
+
+    def get_prsn_dtl(self):
+        # prs_dct_lst = filter(lambda person: person['Id'] == self.anlz_msg_cht_id, tokenbot.p_dtl_dicts_lst)
+        prs_get_dct = next((prsn for prsn in tokenbot.p_dtl_dicts_lst if prsn['Id'] == self.anlz_msg_cht_id), None)
+        if prs_get_dct:
+            self.from_adrs = prs_get_dct["Work"]
+            self.to_adrs = prs_get_dct["Home"]
+
+    # def chk_auth(self):
+    #     if self.anlz_msg_cht_id in tokenbot.hi_auth_id_lst:
+    #             self.msg_prs_hi_auth_id = True
+
     def analyze_in_msg(self):
-        if re.compile('|'.join(dfu.str_in_cmd_hom + dfu.str_in_cmd_wrk),
-                      re.IGNORECASE).search(self.anlz_msg_txt):
-            # self.sw_msg_wz = True
-            # def cre_route(self):
-            if self.anlz_msg_txt.lower() in dfu.str_in_cmd_wrk:        # swap
+        if type(self.anlz_msg_txt).__name__ != 'unicode':       # in case of NON-text input: imoji/pic
+            self.anlz_msg_txt = 'Override - input not text!'
+
+        self.cre_msg_txt_new = dfu.str_greeting.format(self.anlz_msg_from_name,
+                                                       platform.node(),
+                                                       self.anlz_msg_txt
+                                                       )
+        self.get_prsn_dtl()
+
+        # DEFAULT=work-2-home (or swap):
+        # search "comands strings" in input message:
+        # if re.compile('|'.join(dfu.lst_str_in_cmd_hom + dfu.lst_str_in_cmd_wrk),
+        #               re.IGNORECASE).search(self.anlz_msg_txt):
+        if self.anlz_msg_txt.lower() in (dfu.lst_str_in_cmd_hom + dfu.lst_str_in_cmd_wrk):
+            if self.anlz_msg_txt.lower() in dfu.lst_str_in_cmd_wrk:     # swap
                 self.from_adrs, self.to_adrs = self.to_adrs, self.from_adrs
 
-            try:
-                route = WazeRouteCalculator.WazeRouteCalculator(self.from_adrs,
-                                                                self.to_adrs,
-                                                                'IL'    # region
-                                                                )
-                rt_tm, rt_dist = route.calc_route_info()            # tuple
-                self.cre_msg_txt_new = \
-                    dfu.str_full_tm_dist.format(self.from_adrs,
-                                                self.to_adrs,
-                                                rt_tm,
-                                                rt_dist
-                                                )
-            except WazeRouteCalculator.WRCError as err:
-                logger.info(err)
-        elif self.anlz_msg_txt.lower() in dfu.str_qstn_srch_lst:        # case-insensitive
+            self.calc_route()
+        # "pause comp_name":
+        # elif (self.anlz_msg_txt.lower().startswith(dfu.str_in_cmd_pause) and
+        #       len(self.anlz_msg_txt.lower().split(' ')) == 2):
+        #     if self.anlz_msg_txt.lower().split(' ')[1] == platform.node():
+        #         self.chk_auth()
+        #         if self.msg_prs_hi_auth_id:
+        #             self.cre_msg_txt_new += '\n* * * P A U S E * * *'
+        # help/commands/info~:
+        elif self.anlz_msg_txt.lower() in dfu.str_help_cmd_lst:        # case-insensitive
             self.cre_msg_txt_new = dfu.str_out_cmnds
         else:
-            self.cre_msg_txt_new = dfu.str_greeting.format(self.anlz_msg_from_name,
-                                                           platform.node(),
-                                                           self.anlz_msg_txt
-                                                           )
+            pass
+
         return self.cre_msg_txt_new
 
 
@@ -168,12 +191,12 @@ def main():
                 lst_id = str(r.lst_msg_id)
 
 #
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ___________________________________________________________________________
+# ___________________________________________________________________________
 if __name__ == "__main__":
         main()
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ___________________________________________________________________________
+# ___________________________________________________________________________
 
 
 
