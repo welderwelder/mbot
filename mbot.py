@@ -1,3 +1,4 @@
+# coding: utf-8
 import telegram, time, sys, os, re, platform
 from telegram import ParseMode
 from datetime import datetime
@@ -28,7 +29,7 @@ logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
 
-
+#
 #
 # ___________________________________________________________________________
 class Robot:
@@ -37,6 +38,7 @@ class Robot:
         self.bot = telegram.Bot(token=self.token)
         logger.info("bot init: " + str(self.bot))
         self.dyn_delay = 0.9
+        self.daily_dd = '00'
 
     # def get_bot(self):
     #     return self.bot
@@ -86,10 +88,20 @@ class Robot:
             logger.exception(e)
             sys.exit()                          # stop run - erroneous upd but level='info'
 
+    def daily_route(self):
+        if self.daily_dd != datetime.now().strftime('%d'):
+           if datetime.now().strftime('%H') == '15':      # strftime('%H:%M') 2018-11-07 11:57:53.238483
+                Msg.from_adrs = tokenbot.from_address_main
+                Msg.to_adrs = tokenbot.to_address_main
+                Msg.calc_route()    # ????????????????????????????????????????????????????????????????
+                self.snd_msg(tokenbot.hi_auth_id_lst[0], cre_msg_txt_new)
+                self.daily_dd = datetime.now().strftime('%d')
+
 
 #
+#
 # ___________________________________________________________________________
-class A_Msg:
+class Msg:
     def __init__(self, analyze_msg):
         self.from_adrs = tokenbot.from_address_dflt
         self.to_adrs = tokenbot.to_address_dflt
@@ -110,13 +122,36 @@ class A_Msg:
                                                             self.to_adrs,
                                                             'IL'    # region
                                                             )
-            rt_tm, rt_dist = route.calc_route_info()  # tuple
+            rt_tm, rt_dist = route.calc_route_info()    # tuple
+            all_rts_d = route.calc_all_routes_info()    # dict
+            print sorted(all_rts_d.values(),all_rts_d.keys())
+            rt_lns_all = ''
+            for ky, vl in all_rts_d.items():                        # print ky, ':', vl
+                rt_hb_str = ky
+                rt_ln = ''
+                for chr in rt_hb_str:
+                    if chr == u'\xd7':                              # evry heb char rcvd from wz starts: xd7
+                        pass                                        # ==> chg by 2nd byte. replace func cannot chg 2bytes(?)
+                    elif chr in dfu.dict_heb_chr_u8_ucode.keys():   # u'\x93':
+                        rt_ln += dfu.dict_heb_chr_u8_ucode[chr]     # u'\u05D3'
+                    # elif chr.isdigit():
+                        # rt_ln += u'\u05D9' + chr + u'\u05D9'
+                    else:
+                        rt_ln += chr                      # rt_ln = rt_ln[::-1] # reverse string - print=rvrsd, send=ok
+                vl_div, vl_mod = divmod(vl[0], 60)        # type(vl) = `tuple`
+                if vl_div == 0:
+                    rt_lns_all += "\n({:.0f}min,{:.0f}km){}".format(vl_mod, vl[1], rt_ln)
+                else:
+                    rt_lns_all += "\n({:.0f}h{:.0f}min,{:.0f}km){}".format(vl_div,vl_mod, vl[1], rt_ln)
             self.cre_msg_txt_new = \
-                dfu.str_full_tm_dist.format(self.from_adrs,
+                dfu.str_full_tm_dist.format(platform.node()[0],
+                                            self.from_adrs,
                                             self.to_adrs,
                                             rt_tm,
                                             rt_dist
                                             )
+            self.cre_msg_txt_new += rt_lns_all
+            logger.info(self.cre_msg_txt_new)
         except WazeRouteCalculator.WRCError as err:
             logger.info(err)
 
@@ -166,6 +201,7 @@ class A_Msg:
         return self.cre_msg_txt_new
 
 
+#
 # ___________________________________________________________________________
 # ___________________________________________________________________________
 def main():
@@ -184,11 +220,15 @@ def main():
 
         if (not r.skippy):
             if r.lst_msg_id > int(lst_id):
-                m = A_Msg(r.lst_msg)
+                m = Msg(r.lst_msg)
                 r.snd_msg(m.anlz_msg_cht_id, m.analyze_in_msg())
 
                 r.upd_f_lst_id()
                 lst_id = str(r.lst_msg_id)
+
+
+        r.daily_route()
+
 
 #
 # ___________________________________________________________________________

@@ -45,7 +45,7 @@ str_greeting = (
                 "msg=`{}`, type  `info`  to get commands list"
                 )
 
-str_full_tm_dist = "FROM:   {}\nTO:   {}\n*** Time: {:.0f} min ({:.0f} km)"      #%.2f
+str_full_tm_dist = "({}) FROM:   {}\nTO:   {}\n*** Time: {:.0f} min ({:.0f} km)"      #%.2f
 
 # str_is_cur_msg = "cur message: msg_id={}, chat_id={}, text={}, Name={}"
 
@@ -55,3 +55,93 @@ str_full_tm_dist = "FROM:   {}\nTO:   {}\n*** Time: {:.0f} min ({:.0f} km)"     
 # to_address = tokenbot.to_address_main
 # region = 'IL'
 
+dict_heb_chr_u8_ucode = {
+                        # u'\x93':u'\u05D3',
+                        # u'\xa8':u'\u05E8',
+                        u'\x90':u'\u05D0',
+                        u'\x91':u'\u05D1',
+                        u'\x92':u'\u05D2',
+                        u'\x93':u'\u05D3',
+                        u'\x94':u'\u05D4',
+                        u'\x95':u'\u05D5',
+                        u'\x96':u'\u05D6',
+                        u'\x97':u'\u05D7',
+                        u'\x98':u'\u05D8',
+                        u'\x99':u'\u05D9',
+                        u'\x9a':u'\u05DA',
+                        u'\x9b':u'\u05DB',
+                        u'\x9c':u'\u05DC',
+                        u'\x9d':u'\u05DD',
+                        u'\x9e':u'\u05DE',
+                        u'\x9f':u'\u05DF',
+                        u'\xa0':u'\u05E0',
+                        u'\xa1':u'\u05E1',
+                        u'\xa2':u'\u05E2',
+                        u'\xa3':u'\u05E3',
+                        u'\xa4':u'\u05E4',
+                        u'\xa5':u'\u05E5',
+                        u'\xa6':u'\u05E6',
+                        u'\xa7':u'\u05E7',
+                        u'\xa8':u'\u05E8',
+                        u'\xa9':u'\u05E9',
+                        u'\xaa':u'\u05EA'
+                        }
+
+"""
+u'\x90':u'u\05D0',
+u'\x91':u'u\05D1',
+u'\x92':u'u\05D2',
+u'\x93':u'u\05D3',
+u'\x94':u'u\05D4',
+u'\x95':u'u\05D5',
+u'\x96':u'u\05D6',
+u'\x97':u'u\05D7',
+u'\x98':u'u\05D8',
+u'\x99':u'u\05D9',
+u'\x9a':u'u\05DA',
+u'\x9b':u'u\05DB',
+u'\x9c':u'u\05DC',
+u'\x9d':u'u\05DD',
+u'\x9e':u'u\05DE',
+u'\x9f':u'u\05DF',
+u'\xa0':u'u\05E0',
+u'\xa1':u'u\05E1',
+u'\xa2':u'u\05E2',
+u'\xa3':u'u\05E3',
+u'\xa4':u'u\05E4',
+u'\xa5':u'u\05E5',
+u'\xa6':u'u\05E6',
+u'\xa7':u'u\05E7',
+u'\xa8':u'u\05E8',
+u'\xa9':u'u\05E9',
+u'\xaa':u'u\05EA'
+
+
+U+05D0		\xd7\x90	HEBREW LETTER ALEF
+U+05D1		\xd7\x91	HEBREW LETTER BET
+U+05D2		\xd7\x92	HEBREW LETTER GIMEL
+U+05D3		\xd7\x93	HEBREW LETTER DALET
+U+05D4		\xd7\x94	HEBREW LETTER HE
+U+05D5		\xd7\x95	HEBREW LETTER VAV
+U+05D6		\xd7\x96	HEBREW LETTER ZAYIN
+U+05D7		\xd7\x97	HEBREW LETTER HET
+U+05D8		\xd7\x98	HEBREW LETTER TET
+U+05D9		\xd7\x99	HEBREW LETTER YOD
+U+05DA		\xd7\x9a	HEBREW LETTER FINAL KAF
+U+05DB		\xd7\x9b	HEBREW LETTER KAF
+U+05DC		\xd7\x9c	HEBREW LETTER LAMED
+U+05DD		\xd7\x9d	HEBREW LETTER FINAL MEM
+U+05DE		\xd7\x9e	HEBREW LETTER MEM
+U+05DF		\xd7\x9f	HEBREW LETTER FINAL NUN
+U+05E0		\xd7\xa0	HEBREW LETTER NUN
+U+05E1		\xd7\xa1	HEBREW LETTER SAMEKH
+U+05E2		\xd7\xa2	HEBREW LETTER AYIN
+U+05E3		\xd7\xa3	HEBREW LETTER FINAL PE
+U+05E4		\xd7\xa4	HEBREW LETTER PE
+U+05E5		\xd7\xa5	HEBREW LETTER FINAL TSADI
+U+05E6		\xd7\xa6	HEBREW LETTER TSADI
+U+05E7		\xd7\xa7	HEBREW LETTER QOF
+U+05E8		\xd7\xa8	HEBREW LETTER RESH
+U+05E9		\xd7\xa9	HEBREW LETTER SHIN
+U+05EA		\xd7\xaa	HEBREW LETTER TAV
+"""
