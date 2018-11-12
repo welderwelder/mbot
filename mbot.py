@@ -124,7 +124,7 @@ class Msg:
                                                             )
             rt_tm, rt_dist = route.calc_route_info()    # tuple
             all_rts_d = route.calc_all_routes_info()    # dict
-            print sorted(all_rts_d.values(),all_rts_d.keys())
+            # print sorted(all_rts_d.values(),all_rts_d.keys()) ????????????????????????????????
             rt_lns_all = ''
             for ky, vl in all_rts_d.items():                        # print ky, ':', vl
                 rt_hb_str = ky
