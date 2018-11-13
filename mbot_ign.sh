@@ -2,6 +2,8 @@
 # script to be put onto mbot app run machine: if machine rebooted - mbot 
 # should be restarted.
 # crontab -e  <------- @reboot ./~/Documents/mbot/mbot_ign.sh &
+# crontab -e  <------- @reboot lxterminal --command="/bin/bash --init-file ~/Documents/mbot/mbot_ign.sh"
+
 
 # check running processes ran by a command "python mbot.py" will give list of
 # all running processes. Becasue current "grep" check is process by itself - there
