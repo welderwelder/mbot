@@ -38,11 +38,11 @@ class Robot:
         self.bot = telegram.Bot(token=self.token)
         logger.info("bot init: " + str(self.bot))
         self.dyn_delay = 0.9
-        self.daily_dd = '00'
 
     # def get_bot(self):
     #     return self.bot
 
+    #
     def get_lst_msg_bot(self):
         self.skippy = True
         try:
@@ -60,6 +60,7 @@ class Robot:
         except Exception as e:
             logger.info(e)
 
+    #
     def snd_msg(self, cht_id_to, msg_txt_new):
         try:
             self.bot.send_message(chat_id=cht_id_to, text=msg_txt_new,
@@ -67,6 +68,7 @@ class Robot:
         except Exception as e:
             logger.info(e)
 
+    #
     def get_f_lst_id(self):
         try:                                    # if os.path.exists(cnfg_file):
             f = open(cnfg_file, "r")
@@ -78,6 +80,7 @@ class Robot:
 
         return self.f_rd_ln
 
+    #
     def upd_f_lst_id(self):
         try:
             f = open(cnfg_file, "r+")           # r+ The stream is positioned at the beginning of file  # f.seek(0)
@@ -88,15 +91,6 @@ class Robot:
             logger.exception(e)
             sys.exit()                          # stop run - erroneous upd but level='info'
 
-    def daily_route(self):
-        if self.daily_dd != datetime.now().strftime('%d'):
-           if datetime.now().strftime('%H') == '15':      # strftime('%H:%M') 2018-11-07 11:57:53.238483
-                Msg.from_adrs = tokenbot.from_address_main
-                Msg.to_adrs = tokenbot.to_address_main
-                Msg.calc_route()    # ????????????????????????????????????????????????????????????????
-                self.snd_msg(tokenbot.hi_auth_id_lst[0], cre_msg_txt_new)
-                self.daily_dd = datetime.now().strftime('%d')
-
 
 #
 #
@@ -106,55 +100,64 @@ class Msg:
         self.from_adrs = tokenbot.from_address_dflt
         self.to_adrs = tokenbot.to_address_dflt
 
-        self.anlz_msg = analyze_msg
-
+        # self.anlz_msg = analyze_msg 14.11=unnecessary?
         # self.msg_prs_hi_auth_id = False
         self.anlz_msg_cht_id = analyze_msg.chat_id
 
-        self.anlz_msg_from_name = analyze_msg.chat["first_name"]
+        self.anlz_msg_from_name = analyze_msg.chat['first_name']
         self.anlz_msg_id = analyze_msg.message_id
         self.anlz_msg_txt = analyze_msg.text
         self.cre_msg_txt_new = '`Default mesage`'
 
-    def calc_route(self):
+    #
+    def calc_route(self, i_from_adrs, i_to_adrs):
+        o_cre_txt_msg = ''
         try:
-            route = WazeRouteCalculator.WazeRouteCalculator(self.from_adrs,
-                                                            self.to_adrs,
+            route = WazeRouteCalculator.WazeRouteCalculator(i_from_adrs,
+                                                            i_to_adrs,
                                                             'IL'    # region
                                                             )
-            rt_tm, rt_dist = route.calc_route_info()    # tuple
-            all_rts_d = route.calc_all_routes_info()    # dict
+            rt_tm_optml, rt_dist_optml = route.calc_route_info()      # tuple
+            all_rts_d = route.calc_all_routes_info()      # dict
             # print sorted(all_rts_d.values(),all_rts_d.keys()) ????????????????????????????????
             rt_lns_all = ''
-            for ky, vl in all_rts_d.items():                        # print ky, ':', vl
+            for ky, vl in all_rts_d.items():              # print ky, ':', vl
                 rt_hb_str = ky
-                rt_ln = ''
-                for chr in rt_hb_str:
+                rt_line = ''
+                for chr in rt_hb_str:                     # fix readability of heb route string rcvd from wz server
                     if chr == u'\xd7':                              # evry heb char rcvd from wz starts: xd7
                         pass                                        # ==> chg by 2nd byte. replace func cannot chg 2bytes(?)
                     elif chr in dfu.dict_heb_chr_u8_ucode.keys():   # u'\x93':
-                        rt_ln += dfu.dict_heb_chr_u8_ucode[chr]     # u'\u05D3'
+                        rt_line += dfu.dict_heb_chr_u8_ucode[chr]     # u'\u05D3'
                     # elif chr.isdigit():
-                        # rt_ln += u'\u05D9' + chr + u'\u05D9'
+                        # rt_ln += u'\u05D9' + chr + u'\u05D9'      # attempt to fix directions of hebstr with numbrs
                     else:
-                        rt_ln += chr                      # rt_ln = rt_ln[::-1] # reverse string - print=rvrsd, send=ok
+                        rt_line += chr                    # rt_ln = rt_ln[::-1] # reverse string - print=rvrsd, send=ok
+
                 vl_div, vl_mod = divmod(vl[0], 60)        # type(vl) = `tuple`
                 if vl_div == 0:
-                    rt_lns_all += "\n({:.0f}min,{:.0f}km){}".format(vl_mod, vl[1], rt_ln)
+                    rt_line_cur = "\n({:.0f}min,{:.0f}km){}".format(vl_mod, vl[1], rt_line)
                 else:
-                    rt_lns_all += "\n({:.0f}h{:.0f}min,{:.0f}km){}".format(vl_div,vl_mod, vl[1], rt_ln)
-            self.cre_msg_txt_new = \
+                    rt_line_cur = "\n({:.0f}h{:.0f}min,{:.0f}km){}".format(vl_div,vl_mod, vl[1], rt_line)
+
+                if int(vl[0]) == int(rt_tm_optml) and int(vl[1]) == int(rt_dist_optml):     # bold-up shortest route
+                    rt_line_cur = dfu.b_s + rt_line_cur + dfu.b_e + u' \u2b05'              # <-- = arrow left
+
+                rt_lns_all += rt_line_cur
+
+            o_cre_txt_msg = \
                 dfu.str_full_tm_dist.format(platform.node()[0],
-                                            self.from_adrs,
-                                            self.to_adrs,
-                                            rt_tm,
-                                            rt_dist
+                                            i_from_adrs,
+                                            i_to_adrs            # rt_tm_optml, rt_dist_optml - omit only optml route line
                                             )
-            self.cre_msg_txt_new += rt_lns_all
-            logger.info(self.cre_msg_txt_new)
+            o_cre_txt_msg += rt_lns_all
+            logger.info(o_cre_txt_msg)
         except WazeRouteCalculator.WRCError as err:
             logger.info(err)
 
+        return o_cre_txt_msg, rt_tm_optml
+
+    #
     def get_prsn_dtl(self):
         # prs_dct_lst = filter(lambda person: person['Id'] == self.anlz_msg_cht_id, tokenbot.p_dtl_dicts_lst)
         prs_get_dct = next((prsn for prsn in tokenbot.p_dtl_dicts_lst if prsn['Id'] == self.anlz_msg_cht_id), None)
@@ -166,6 +169,8 @@ class Msg:
     #     if self.anlz_msg_cht_id in tokenbot.hi_auth_id_lst:
     #             self.msg_prs_hi_auth_id = True
 
+
+    #
     def analyze_in_msg(self):
         if type(self.anlz_msg_txt).__name__ != 'unicode':       # in case of NON-text input: imoji/pic
             self.anlz_msg_txt = 'Override - input not text!'
@@ -184,7 +189,7 @@ class Msg:
             if self.anlz_msg_txt.lower() in dfu.lst_str_in_cmd_wrk:     # swap
                 self.from_adrs, self.to_adrs = self.to_adrs, self.from_adrs
 
-            self.calc_route()
+            self.cre_msg_txt_new = self.calc_route(self.from_adrs, self.to_adrs)[0]
         # "pause comp_name":
         # elif (self.anlz_msg_txt.lower().startswith(dfu.str_in_cmd_pause) and
         #       len(self.anlz_msg_txt.lower().split(' ')) == 2):
@@ -199,6 +204,20 @@ class Msg:
             pass
 
         return self.cre_msg_txt_new
+
+    #
+    def daily_route(self):
+        self.daily_dd = '00' #??? init YESS
+
+        if self.daily_dd != datetime.now().strftime('%d'):
+           if datetime.now().strftime('%H') == '11':      # strftime('%H:%M') 2018-11-07 11:57:53.238483
+                Msg.from_adrs = tokenbot.from_address_main
+                Msg.to_adrs = tokenbot.to_address_main
+                Msg.calc_route()    # ????????????????????????????????????????????????????????????????
+                # self.snd_msg(tokenbot.hi_auth_id_lst[0], Msg?.cre_msg_txt_new)
+                self.daily_dd = datetime.now().strftime('%d')
+                # if route_calc_warning_y
+                #     r.snd_msg
 
 
 #
@@ -217,17 +236,20 @@ def main():
         time.sleep(r.dyn_delay)                 # (0.9)
 
         r.get_lst_msg_bot()
-
         if (not r.skippy):
             if r.lst_msg_id > int(lst_id):
                 m = Msg(r.lst_msg)
+
                 r.snd_msg(m.anlz_msg_cht_id, m.analyze_in_msg())
 
                 r.upd_f_lst_id()
                 lst_id = str(r.lst_msg_id)
 
-
-        r.daily_route()
+        # r.daily_route() ???
+        # m.__init__(dummy_msg)
+        # m?.daily_route()
+        # if msg not empty
+        #     r.snd
 
 
 #

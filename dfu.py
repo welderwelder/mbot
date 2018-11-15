@@ -39,13 +39,16 @@ str_out_cmnds = (
                  "<b>`work=RLZ, Buma Shavit 5` - set work address </b>\n"
                  "`home=TA, Hertzl 156` - set HOME address \n"
                  )
+b_s = '<b>'
+b_e = '</b>'
 
 str_greeting = (
                 "hello {} iam a mishkas robot  **{}**, your "
                 "msg=`{}`, type  `info`  to get commands list"
                 )
 
-str_full_tm_dist = "({}) FROM:   {}\nTO:   {}\n*** Time: {:.0f} min ({:.0f} km)"      #%.2f
+# str_full_tm_dist = "({}) FROM:   {}\nTO:   {}\n*** Time: {:.0f} min ({:.0f} km)"      #%.2f
+str_full_tm_dist = "({}) FROM:   {}\nTO:   {}"      #%.2f
 
 # str_is_cur_msg = "cur message: msg_id={}, chat_id={}, text={}, Name={}"
 
@@ -144,4 +147,42 @@ U+05E7		\xd7\xa7	HEBREW LETTER QOF
 U+05E8		\xd7\xa8	HEBREW LETTER RESH
 U+05E9		\xd7\xa9	HEBREW LETTER SHIN
 U+05EA		\xd7\xaa	HEBREW LETTER TAV
+
+print r.lst_msg ---> gives only 'visible' parts of CLASS:
+{'delete_chat_photo': False, 'new_chat_photo': [],
+'from': {'first_name': u'Zevik', 'last_name': u'Hertzl', 'is_bot': False, 'id': 672748593, 'language_code': u'en-IL'},
+'text': u'R', 'caption_entities': [], 'entities': [], 'channel_chat_created': False, 'new_chat_members': [],
+'supergroup_chat_created': False,
+ 'chat': {'first_name': u'Zevik', 'last_name': u'Hertzl', 'type': u'private','id': 672748593},
+ 'photo': [], 'date': 1542174651, 'group_chat_created': False, 'message_id': 2034}
+
+type(r.lst_msg) =   <class 'telegram.message.Message'>
+
+
+dir(r.lst_msg) =
+
+['ATTACHMENT_TYPES', 'MESSAGE_TYPES', '__abstractmethods__', '__class__', '__delattr__', '__dict__',
+ '__doc__', '__eq__', '__format__', '__getattribute__', '__getitem__', '__hash__', '__init__', '__metaclass__',
+  '__module__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__',
+   '__subclasshook__', '__weakref__', '_abc_cache', '_abc_negative_cache', '_abc_negative_cache_version',
+   '_abc_registry', '_effective_attachment', '_id_attrs', '_parse_html', '_parse_markdown', '_quote',
+
+    'audio',
+   'author_signature', 'bot', 'caption', 'caption_entities', 'caption_html', 'caption_html_urled', 'caption_markdown',
+   'caption_markdown_urled', 'channel_chat_created',
+   'chat',
+    'chat_id', 'connected_website', 'contact', 'date',
+    'de_json', 'delete', 'delete_chat_photo', 'document', 'edit_caption', 'edit_date', 'edit_reply_markup',
+    'edit_text', 'effective_attachment', 'entities', 'forward', 'forward_date', 'forward_from', 'forward_from_chat',
+    'forward_from_message_id', 'forward_signature', 'from_user', 'game', 'group_chat_created', 'invoice',
+    'left_chat_member', 'location', 'media_group_id', 'message_id', 'migrate_from_chat_id', 'migrate_to_chat_id',
+     'new_chat_members', 'new_chat_photo', 'new_chat_title', 'parse_caption_entities', 'parse_caption_entity',
+     'parse_entities', 'parse_entity', 'photo', 'pinned_message', 'reply_audio', 'reply_contact', 'reply_document',
+      'reply_html', 'reply_location', 'reply_markdown', 'reply_media_group', 'reply_photo', 'reply_sticker',
+      'reply_text', 'reply_to_message', 'reply_venue', 'reply_video', 'reply_video_note', 'reply_voice',
+       'sticker', 'successful_payment', 'supergroup_chat_created', 'text', 'text_html', 'text_html_urled',
+       'text_markdown', 'text_markdown_urled', 'to_dict', 'to_json', 'venue', 'video', 'video_note', 'voice']
+
+
+
 """
