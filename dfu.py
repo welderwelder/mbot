@@ -8,39 +8,35 @@ str_idx_err = (
                 "Index Error: no messages on Telegram "
                 "server(?). NOT logged, {:%d.%m.%Y %H:%M:%S}"
                 )
-#
-# str_rsrv_struct = (
-#                     "reservation structure:\n"
-#                     "Source \n"
-#                     "dd.mm.yy  HH:MM \n"
-#                     "Dest \n"
-#                     "timing always between Source and Dest - so one of the"
-#                     "directions is NON-obligatory!"
-#                     )
-#
-# str_qstn_rule_y = (
-#                     "serving  MATAF TAXI reservations, type `info` for "
-#                     "reservation instructions, "
-#                     )
-
-# str_qstn_rule_gen = "type `info` for reservation instructions, `wz` to get HOME:] "
-
-str_help_cmd_lst = [ # 'who', 'what', 'why', 'how', 'where',
+lst_str_hlp_cmd = [ # 'who', 'what', 'why', 'how', 'where',
                      '.*\?', 'info', '/info', '/commands', 'commands',
                      '/help', '--help', '-help', 'help']
 
-lst_str_in_cmd_hom = ['/home', 'home']
-lst_str_in_cmd_wrk = ['/work', 'work']
-str_in_cmd_pause = 'pause'
+lst_str_hom_cmd = ['/home', 'home']
+lst_str_wrk_cmd = ['/work', 'work']
+lst_str_upd_hom_cmd = ['home=', 'home =']
+lst_str_upd_wrk_cmd = ['work=', 'work =']
+lst_str_upd_nam_cmd = ['name=', 'name =']
 
 str_out_cmnds = (
                  "<b>`work` - Calc route from home to work </b>\n"
                  "`home` - ~~ from work to HOME \n"
                  "<b>`work=RLZ, Buma Shavit 5` - set work address </b>\n"
                  "`home=TA, Hertzl 156` - set HOME address \n"
+                 "`name=Zvika` \n"
                  )
 b_s = '<b>'
 b_e = '</b>'
+
+# daily_rt_scdl_hh_str = '14'       # 15:mm   # strftime('%H:%M') ~"2018-11-07 11:57:53.238483~
+# daily_rt_scdl_mm_max_str = '45'   # HH:45
+#
+# tm_sample_delta_hh = 0
+# tm_sample_delta_mm = 1
+# tm_sample_delta_ss = 15
+#
+# rt_tm_long = 40
+
 
 str_greeting = (
                 "hello {} iam a mishkas robot  **{}**, your "
@@ -50,13 +46,6 @@ str_greeting = (
 # str_full_tm_dist = "({}) FROM:   {}\nTO:   {}\n*** Time: {:.0f} min ({:.0f} km)"      #%.2f
 str_full_tm_dist = "({}) FROM:   {}\nTO:   {}"      #%.2f
 
-# str_is_cur_msg = "cur message: msg_id={}, chat_id={}, text={}, Name={}"
-
-# str_wz_srch_lst = ['wz','waz','waze']
-
-# from_address = tokenbot.from_address_main
-# to_address = tokenbot.to_address_main
-# region = 'IL'
 
 dict_heb_chr_u8_ucode = {
                         # u'\x93':u'\u05D3',
@@ -90,7 +79,65 @@ dict_heb_chr_u8_ucode = {
                         u'\xaa':u'\u05EA'
                         }
 
+
+
+
+
+
+
 """
+
+# search "comands strings" in input message:
+        # if re.compile('|'.join(dfu.lst_str_in_cmd_hom + dfu.lst_str_in_cmd_wrk),
+        #               re.IGNORECASE).search(self.anlz_msg_txt):
+
+
+
+
+# str_is_cur_msg = "cur message: msg_id={}, chat_id={}, text={}, Name={}"
+# str_wz_srch_lst = ['wz','waz','waze']
+# from_address = tokenbot.from_address_main
+# to_address = tokenbot.to_address_main
+# region = 'IL'
+
+    # def chk_auth(self):
+    #     if self.anlz_msg_cht_id in tokenbot.hi_auth_id_lst:
+    #             self.msg_prs_hi_auth_id = True
+
+#
+# str_rsrv_struct = (
+#                     "reservation structure:\n"
+#                     "Source \n"
+#                     "dd.mm.yy  HH:MM \n"
+#                     "Dest \n"
+#                     "timing always between Source and Dest - so one of the"
+#                     "directions is NON-obligatory!"
+#                     )
+#
+# str_qstn_rule_y = (
+#                     "serving  MATAF TAXI reservations, type `info` for "
+#                     "reservation instructions, "
+#                     )
+
+
+# str_qstn_rule_gen = "type `info` for reservation instructions, `wz` to get HOME:] "
+
+
+
+
+# str_in_cmd_pause = 'pause'
+
+        # "pause comp_name":
+        # elif (self.anlz_msg_txt.lower().startswith(dfu.str_in_cmd_pause) and
+        #       len(self.anlz_msg_txt.lower().split(' ')) == 2):
+        #     if self.anlz_msg_txt.lower().split(' ')[1] == platform.node():
+        #         self.chk_auth()
+        #         if self.msg_prs_hi_auth_id:
+        #             self.cre_msg_txt_new += '\n* * * P A U S E * * *'
+        # help/commands/info~:
+
+https://www.utf8-chartable.de/unicode-utf8-table.pl?start=1408&number=128&utf8=string-literal
+
 u'\x90':u'u\05D0',
 u'\x91':u'u\05D1',
 u'\x92':u'u\05D2',
