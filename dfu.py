@@ -17,14 +17,18 @@ lst_str_wrk_cmd = ['/work', 'work']
 lst_str_upd_hom_cmd = ['home=', 'home =']
 lst_str_upd_wrk_cmd = ['work=', 'work =']
 lst_str_upd_nam_cmd = ['name=', 'name =']
+# lst_str_to_cmd = [' to ', '--']
+str_to_opr = ' to '
 
 str_out_cmnds = (
-                 "<b>`work` - Calc route from home to work </b>\n"
-                 "`home` - ~~ from work to HOME \n"
-                 "<b>`work=RLZ, Buma Shavit 5` - set work address </b>\n"
-                 "`home=TA, Hertzl 156` - set HOME address \n"
-                 "`name=Zvika` \n"
+                 "<b>work</b> (Calc route from home to work)\n"
+                 "<b>home</b> (.. to HOME)\n"
+                 "<b>work=Ben Gurion 5, Holon</b> (set work address)\n"
+                 "<b>home=haifa, Hertzl 156</b> (set HOME address)\n"
+                 "<b>name=Zvika</b> (set name)\n"
                  )
+str_per_dtl = "\ncurrent home: {}\ncur work: {}\n"
+
 b_s = '<b>'
 b_e = '</b>'
 

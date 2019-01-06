@@ -199,8 +199,8 @@ class Msg:
                                             )
             o_cre_txt_msg += rt_lns_all
             logger.info(o_cre_txt_msg)
-        except WazeRouteCalculator.WRCError as err:
-            logger.info(err)
+        # except WazeRouteCalculator.WRCError as err:
+        #     logger.info(err)
         except Exception as e:              # other cases, ex:erroneous input sent ==> abend
             logger.info(e)
             o_cre_txt_msg = '(' + platform.node()[0] + ') Error CALC route - check Source/Dest !!'
@@ -218,6 +218,7 @@ class Msg:
             if self.per_dct_gdb_u == None:
                 crm_clct.insert(self.crm_data_2db)
                 self.sw_fst_tm_crm_ins = True
+                self.per_dct_gdb_u = self.crm_data_2db  # init for case of first timer
             else:
                 self.from_adrs = self.per_dct_gdb_u['work_adr']
                 self.to_adrs = self.per_dct_gdb_u['home_adr']
@@ -245,16 +246,28 @@ class Msg:
         if self.sw_fst_tm_crm_ins:
           self.cre_msg_txt_new += '.\n\nYou were added to the SYSTEM.'
 
-        # "home"/"work"
+        # "home"/"work"     DEFAULT=work-2-home (or  s w a p)...
         if self.anlz_msg_txt.lower() in (dfu.lst_str_hom_cmd + dfu.lst_str_wrk_cmd):
             if self.anlz_msg_txt.lower() in dfu.lst_str_wrk_cmd:
                 self.from_adrs, self.to_adrs = self.to_adrs, self.from_adrs     # S W A P !!!
             self.cre_msg_txt_new, self.anlz_msg_rt_tm_optml_gnrtd\
                 = self.calc_route(self.from_adrs, self.to_adrs)                 #[0]
-        #              ##########
+        #              ^^^^^^^^^^
+        #
+        # "src to dest" ------->
+        # elif (any(ele in self.anlz_msg_txt.lower() for ele in dfu.lst_str_to_cmd)):
+        elif dfu.str_to_opr in self.anlz_msg_txt.lower():
+            # print self.anlz_msg_txt.split(dfu.str_to_opr)[0]
+            # print self.anlz_msg_txt.split(dfu.str_to_opr)[1]
+            self.cre_msg_txt_new, self.anlz_msg_rt_tm_optml_gnrtd \
+                = self.calc_route(self.anlz_msg_txt.split(dfu.str_to_opr)[0], self.anlz_msg_txt.split(dfu.str_to_opr)[1])
+        #              ^^^^^^^^^^
+        #
         # "HELP"
-        elif self.anlz_msg_txt.lower() in dfu.lst_str_hlp_cmd:                  # case-insensitive
-            self.cre_msg_txt_new = dfu.str_out_cmnds
+        elif self.anlz_msg_txt.lower() in dfu.lst_str_hlp_cmd:  # case-insensitive
+            self.cre_msg_txt_new = dfu.str_out_cmnds + dfu.str_per_dtl.format(self.per_dct_gdb_u['home_adr'],
+                                                                              self.per_dct_gdb_u['work_adr'])
+        #
         #
         #
         # "NAME="
@@ -263,12 +276,14 @@ class Msg:
             self.crm_data_2db['first_name'] = self.anlz_msg_txt.split("=")[1]
             self.per_dct_gdb_u['first_name'] = self.anlz_msg_txt.split("=")[1]
             self.sw_upd_crm = True
+        #
         # "HOME="
         elif (any(ele in self.anlz_msg_txt.lower() for ele in dfu.lst_str_upd_hom_cmd) and
             not (self.sw_fst_tm_crm_ins)):
             self.crm_data_2db['home_adr'] = self.anlz_msg_txt.split("=")[1]
             self.per_dct_gdb_u['home_adr'] = self.anlz_msg_txt.split("=")[1]
             self.sw_upd_crm = True
+        #
         # "WORK="
         elif (any(ele in self.anlz_msg_txt.lower() for ele in dfu.lst_str_upd_wrk_cmd) and
             not (self.sw_fst_tm_crm_ins)):
@@ -281,17 +296,16 @@ class Msg:
         if self.sw_upd_crm:
             try:
                 # per_dct_gdb_u = crm_clct.find_one({'usr_id': self.anlz_msg_cht_id, 'ver': 0}, {'_id': 0})
-                print self.per_dct_gdb_u
                 crm_clct.update({'usr_id': self.anlz_msg_cht_id, 'ver': 0}, {'$set': {'ver': 1}})
-                self.crm_data_2db['ver'] = 0
+                self.per_dct_gdb_u['ver'] = 0
+                self.per_dct_gdb_u['mch'] = platform.node()
+                self.per_dct_gdb_u['ts'] = datetime.now()
                 crm_clct.insert(self.per_dct_gdb_u)
                 self.cre_msg_txt_new = 'Updated Successfully :)'
             except Exception as e:
                 logger.info(e)
 
         # SAVE MESSAGE --> DB:
-        # DEFAULT=work-2-home (or  s w a p):
-        # "/HOME","/WORK"
         # self.msg_data_2db.update({ --- causes duplicate key ~~ _id added automatically?~
         self.msg_data_2db = {'usr_id':  self.anlz_msg_cht_id,
                              'msg_id':  self.anlz_msg_id,
@@ -299,7 +313,7 @@ class Msg:
                              'ts':      datetime.now(),
                              'i_o':     'o',
                              'mch':     platform.node()
-                             } #)
+                             }
         if self.anlz_msg_rt_tm_optml_gnrtd != 0:
             self.msg_data_2db['rt_tm'] = int(self.anlz_msg_rt_tm_optml_gnrtd)
         try:
