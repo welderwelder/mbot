@@ -9,7 +9,7 @@ import dfu                          # Data_File_Use: strings constants etc.
 import pymongo
 import urllib
 import speech_recognition as sr     # pip install SpeechRecognition
-import subprocess                   # to run ffmpeg
+import subprocess                   # to run ffmpeg install ffmpeg ? via website+build!
 
 reload(sys)                         # after class-ing: err ascii decode heb str
 sys.setdefaultencoding('UTF-8')     # still heb strings log lft->rgt reversed(?)
