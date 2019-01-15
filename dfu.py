@@ -26,6 +26,8 @@ str_out_cmnds = (
                  "<b>work=Ben Gurion 5, Holon</b> (set work address)\n"
                  "<b>home=haifa, Hertzl 156</b> (set HOME address)\n"
                  "<b>name=Zvika</b> (set name)\n"
+                 "<b>hilel 13 ramat gan to reut 9 holon</b>\n"
+                 "or VOICE the command !!!\n"
                  )
 str_per_dtl = "\ncurrent home: {}\ncur work: {}\n"
 
@@ -44,11 +46,11 @@ b_e = '</b>'
 
 str_greeting = (
                 "hello {} iam a mishkas robot  **{}**, your "
-                "msg=`{}`, type  `info`  to get commands list"
+                "msg=`{}`, type <b>info</b> to get commands list"
                 )
 
 # str_full_tm_dist = "({}) FROM:   {}\nTO:   {}\n*** Time: {:.0f} min ({:.0f} km)"      #%.2f
-str_full_tm_dist = "({}) FROM:   {}\nTO:   {}"      #%.2f
+str_full_tm_dist = "({}) FROM:   <b>{}</b>\nTO:   <b>{}</b>"      #%.2f
 
 
 dict_heb_chr_u8_ucode = {
@@ -94,6 +96,70 @@ dict_heb_chr_u8_ucode = {
 # search "comands strings" in input message:
         # if re.compile('|'.join(dfu.lst_str_in_cmd_hom + dfu.lst_str_in_cmd_wrk),
         #               re.IGNORECASE).search(self.anlz_msg_txt):
+
+voice:
+Override - input not text!
+2019-01-07 12:45:11,294:__main__:   upd_f_lst_id: {'delete_chat_photo': False, 'new_chat_photo': [],
+'from': {'first_name': u'Zevik', 'last_name': u'Hertzl', 'is_bot': False, 'id': 672748593, 'language_code': u'en'},
+ 'photo': [], 'channel_chat_created': False, 'caption_entities': [], 'entities': [], 'new_chat_members': [],
+ 'supergroup_chat_created': False, 'chat': {'first_name': u'Zevik', 'last_name': u'Hertzl', 'type': u'private',
+  'id': 672748593}, 'date': 1546852959, 'group_chat_created': False,
+
+  'voice': {'duration': 2,
+  'file_id': 'AwADBAADHwUAAhjZmFGs6HavMWJJbQI', 'mime_type': u'audio/ogg', 'file_size': 4830},
+
+  'message_id': 3093}
+
+
+pic:
+Override - input not text!
+2019-01-07 13:50:11,060:__main__:   upd_f_lst_id: {'delete_chat_photo': False, 'new_chat_photo': [],
+'from': {'first_name': u'Zevik', 'last_name': u'Hertzl', 'is_bot': False, 'id': 672748593, 'language_code': u'en'},
+
+'photo': [
+{'width': 90, 'file_size': 1394, 'file_id': 'AgADBAADTLExGxjZmFHI-U4aWGVVTcMyHxsABIEcyx_qhGAaaTQBAAEC',
+ 'height': 51},
+ {'width': 320, 'file_size': 17988,
+  'file_id': 'AgADBAADTLExGxjZmFHI-U4aWGVVTcMyHxsABPX7n_mqfbEnajQBAAEC', 'height': 180},
+  {'width': 800, 'file_size': 77708, 'file_id': 'AgADBAADTLExGxjZmFHI-U4aWGVVTcMyHxsABF3QPLCV0TdKazQBAAEC',
+  'height': 450},
+  {'width': 1280, 'file_size': 146635,
+  'file_id': 'AgADBAADTLExGxjZmFHI-U4aWGVVTcMyHxsABKfYuIhGfIzVbDQBAAEC', 'height': 720}],
+
+   'channel_chat_created': False, 'caption_entities': [], 'entities': [], 'new_chat_members': [],
+    'supergroup_chat_created': False, 'chat': {'first_name': u'Zevik', 'last_name': u'Hertzl',
+    'type': u'private', 'id': 672748593}, 'date': 1546861557, 'group_chat_created': False,
+
+    'message_id': 3096}
+
+
+
+{u'alternative':
+    [
+        {u'transcript': u'eilat'},
+        {u'transcript': u'a lot'},
+        {u'transcript': u'Halo'},
+        {u'transcript': u'Greylock'},
+        {u'transcript': u'a lock'},
+        {u'transcript': u'alot'},
+        {u'transcript': u'a eilat'},
+        {u'transcript': u'ia lot'},
+        {u'transcript': u'alive'},
+        {u'transcript': u'uzit'},
+        {u'transcript': u'arad'},
+        {u'transcript': u'odd lot'},
+        {u'transcript': u'hello'},
+        {u'transcript': u'the lot'},
+        {u'transcript': u'a arad'}
+    ],
+  u'final': True}
+
+{u'alternative': [{u'confidence': 0.98762912, u'transcript': u'a lot'}], u'final': True}
+                 [{u'confidence': 0.98762912, u'transcript': u'a lot'}]
+                 [{u'transcript': u'a lot'}, {u'transcript': u'eilat'}]
+                 [u'a lot', : u'eilat']
+                 [u'ash 2 a lot', u'asholot', u'ashkelon to eilat', u'aiche to eilat', u'a lock', u'ai to a lot']
+
 
 
 

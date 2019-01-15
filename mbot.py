@@ -7,6 +7,9 @@ import tokenbot                     # .gitignore !
 import WazeRouteCalculator
 import dfu                          # Data_File_Use: strings constants etc.
 import pymongo
+import urllib
+import speech_recognition as sr     # pip install SpeechRecognition
+import subprocess                   # to run ffmpeg
 
 reload(sys)                         # after class-ing: err ascii decode heb str
 sys.setdefaultencoding('UTF-8')     # still heb strings log lft->rgt reversed(?)
@@ -34,6 +37,10 @@ pm_cli = pymongo.MongoClient(tokenbot.pm_cli_cre_con_inst_str)
 pm_cli_db_mtftx = pm_cli.mtftx           # chk if "test"(db) exists, if not - would be created ~automatically~
 msg_clct = pm_cli_db_mtftx.msg           # chk if "xxx"(collection) exists..            ~ ~ ~
 crm_clct = pm_cli_db_mtftx.crm
+vcb_clct = pm_cli_db_mtftx.vcb
+
+# SR:
+rcgzr = sr.Recognizer()
 
 
 #
@@ -118,17 +125,23 @@ class Msg:
         self.daily_rt_tm_prv = 0.0
 
     #
-    def init_xtnd(self, i_analyze_msg):
-        self.anlz_msg_cht_id = i_analyze_msg.chat_id
-        self.anlz_msg_from_name = i_analyze_msg.chat['first_name']
-        self.anlz_msg_last_name = i_analyze_msg.chat['last_name']
-        self.anlz_msg_id = i_analyze_msg.message_id
-        self.anlz_msg_txt = i_analyze_msg.text
-        self.anlz_msg_ts = i_analyze_msg.date
+    def init_xtnd(self, i_analyze_msg_r):
+        self.anlz_msg_cht_id = i_analyze_msg_r.chat_id
+        self.anlz_msg_from_name = i_analyze_msg_r.chat['first_name']
+        self.anlz_msg_last_name = i_analyze_msg_r.chat['last_name']
+        self.anlz_msg_id = i_analyze_msg_r.message_id
+        self.anlz_msg_txt = i_analyze_msg_r.text
+        self.anlz_msg_ts = i_analyze_msg_r.date
         self.anlz_msg_rt_tm_optml_gnrtd = 0
         self.sw_fst_tm_crm_ins = False
         self.sw_upd_crm = False
+        self.anlz_msg_r_obj = i_analyze_msg_r
+        self.v_msg_fid = None
+        self.p_msg_fid = None
+        self.f_nam_wav = None
 
+        # if self.anlz_msg_txt == None:
+        #     self.anlz_msg_txt = 'NOT text'
         self.msg_data_2db = {'usr_id':     self.anlz_msg_cht_id,
                              # 'from_name': self.anlz_msg_from_name,
                              # 'last_name': self.anlz_msg_last_name,
@@ -138,6 +151,10 @@ class Msg:
                              'i_o':        'i',
                              'mch':        platform.node()
                              }
+        try:
+            msg_clct.insert(self.msg_data_2db)
+        except Exception as e:
+            logger.info(e)
 
         self.crm_data_2db = {'usr_id':     self.anlz_msg_cht_id,
                              'first_name': self.anlz_msg_from_name,
@@ -149,15 +166,15 @@ class Msg:
                              'ver':        0
                              }
 
-        try:
-            msg_clct.insert(self.msg_data_2db)
-        except Exception as e:
-            logger.info(e)
-
 
     #
     def calc_route(self, i_from_adrs, i_to_adrs):
-        o_cre_txt_msg = ' '
+        # o_cre_txt_msg = ' '
+        o_cre_txt_msg = \
+            dfu.str_full_tm_dist.format(platform.node()[0],
+                                        i_from_adrs,
+                                        i_to_adrs  # rt_tm_optml, rt_dist_optml - omit only optml route line
+                                        )
         rt_tm_optml = 0      # set val for case of abend while eeroneous input:"bashkilon"~~
         try:
             route = WazeRouteCalculator.WazeRouteCalculator(i_from_adrs,
@@ -192,18 +209,14 @@ class Msg:
 
                 rt_lns_all += rt_line_cur
 
-            o_cre_txt_msg = \
-                dfu.str_full_tm_dist.format(platform.node()[0],
-                                            i_from_adrs,
-                                            i_to_adrs            # rt_tm_optml, rt_dist_optml - omit only optml route line
-                                            )
+
             o_cre_txt_msg += rt_lns_all
             logger.info(o_cre_txt_msg)
         # except WazeRouteCalculator.WRCError as err:
         #     logger.info(err)
         except Exception as e:              # other cases, ex:erroneous input sent ==> abend
             logger.info(e)
-            o_cre_txt_msg = '(' + platform.node()[0] + ') Error CALC route - check Source/Dest !!'
+            o_cre_txt_msg += '\n Error CALC route - check Source/Dest !!'
 
         return o_cre_txt_msg, rt_tm_optml
 
@@ -233,10 +246,57 @@ class Msg:
 
 
     #
-    def analyze_in_msg(self):
-        if type(self.anlz_msg_txt).__name__ != 'unicode':       # in case of NON-text input: imoji/pic
-            self.anlz_msg_txt = 'Override - input not text!'
+    def v_msg_rcgz(self):
+        try:
+            f_nam = "voc/msg-" + self.v_msg_fid + '-' + str(self.anlz_msg_cht_id) + '-' + str(datetime.now()) + ".oga"
+            urllib.urlretrieve(self.v_msg_f_pth, f_nam)
+            self.f_nam_wav = f_nam.replace(".oga",".wav")
 
+            nl = open(os.devnull, 'wb')
+            process = subprocess.call(['ffmpeg', '-i', f_nam, self.f_nam_wav], stdout=nl, stderr=nl)
+
+            os.remove(f_nam)
+
+            v_msg_wav_af = sr.AudioFile(self.f_nam_wav)
+
+            with v_msg_wav_af as source:
+                audio = rcgzr.record(source)   # print type(audio)
+
+            self.anlz_rcgz_lst = rcgzr.recognize_google(audio, show_all=True)
+            print self.anlz_rcgz_lst
+            if len(self.anlz_rcgz_lst) > 0:
+                lst_rcgz = [dict['transcript'] for dict in self.anlz_rcgz_lst["alternative"]]
+                print lst_rcgz
+                vcb_fnd = lst_rcgz[0]
+                for mmbr in lst_rcgz:       # [u'a lot', : u'eilat']
+                    vcb_chk = vcb_clct.find_one({'vcb_val': mmbr.lower()}) #---> ramat gan - 2 words ??????
+                    if vcb_chk:
+                        vcb_fnd = mmbr
+                        print 'Found match!'   # -------------> need to look for LONGEST match !!!!!!
+                        print mmbr
+                        # [u'rehovot to Ramat Gan', u'rehovot to Ramat gun', u'to Ramat Gan']
+                        # TODO:
+                    # else:
+                    #     fine tuning:  mmbr.split + chk num of db fits
+                self.anlz_msg_txt = vcb_fnd
+        except Exception as e:
+            logger.info(e)
+
+
+    #
+    def chk_msg_type(self):
+        if type(self.anlz_msg_txt).__name__ != 'unicode':        # in case of NON-text input: imoji/pic/voice
+            self.anlz_msg_txt = 'Override - input NOT valid!'
+
+            if self.anlz_msg_r_obj.voice != None:                # print r.lst_msg.photo[0]['file_id']
+                self.v_msg_fid = self.anlz_msg_r_obj.voice['file_id']  # exmpl: .voice gets "None" if pic send !
+                self.anlz_msg_txt = 'voice msg: ' + self.v_msg_fid
+            elif len(self.anlz_msg_r_obj.photo) > 0:                # photo list always returned
+                self.p_msg_fid = self.anlz_msg_r_obj.photo[0]['file_id']
+                self.anlz_msg_txt = 'picture: ' + self.p_msg_fid
+
+    #
+    def analyze_txt_in_msg(self):
         self.get_prsn_dtl()
 
         self.cre_msg_txt_new = dfu.str_greeting.format(self.anlz_msg_from_name,
@@ -246,28 +306,36 @@ class Msg:
         if self.sw_fst_tm_crm_ins:
           self.cre_msg_txt_new += '.\n\nYou were added to the SYSTEM.'
 
+        #
         # "home"/"work"     DEFAULT=work-2-home (or  s w a p)...
         if self.anlz_msg_txt.lower() in (dfu.lst_str_hom_cmd + dfu.lst_str_wrk_cmd):
             if self.anlz_msg_txt.lower() in dfu.lst_str_wrk_cmd:
                 self.from_adrs, self.to_adrs = self.to_adrs, self.from_adrs     # S W A P !!!
+            src, dest = self.from_adrs, self.to_adrs
             self.cre_msg_txt_new, self.anlz_msg_rt_tm_optml_gnrtd\
-                = self.calc_route(self.from_adrs, self.to_adrs)                 #[0]
+                = self.calc_route(src, dest)                 #[0]
         #              ^^^^^^^^^^
         #
         # "src to dest" ------->
-        # elif (any(ele in self.anlz_msg_txt.lower() for ele in dfu.lst_str_to_cmd)):
         elif dfu.str_to_opr in self.anlz_msg_txt.lower():
-            # print self.anlz_msg_txt.split(dfu.str_to_opr)[0]
-            # print self.anlz_msg_txt.split(dfu.str_to_opr)[1]
+            src = self.anlz_msg_txt.split(dfu.str_to_opr)[0]
+            dest = self.anlz_msg_txt.split(dfu.str_to_opr)[1]
+            if any(ele in src.lower() for ele in dfu.lst_str_wrk_cmd):
+                src = self.from_adrs    #work
+            if any(ele in src.lower() for ele in dfu.lst_str_hom_cmd):
+                src = self.to_adrs      #home
+            if any(ele in dest.lower() for ele in dfu.lst_str_wrk_cmd):
+                dest = self.from_adrs    #work
+            if any(ele in dest.lower() for ele in dfu.lst_str_hom_cmd):
+                dest = self.to_adrs      #home
             self.cre_msg_txt_new, self.anlz_msg_rt_tm_optml_gnrtd \
-                = self.calc_route(self.anlz_msg_txt.split(dfu.str_to_opr)[0], self.anlz_msg_txt.split(dfu.str_to_opr)[1])
+                = self.calc_route(src, dest)
         #              ^^^^^^^^^^
         #
         # "HELP"
         elif self.anlz_msg_txt.lower() in dfu.lst_str_hlp_cmd:  # case-insensitive
             self.cre_msg_txt_new = dfu.str_out_cmnds + dfu.str_per_dtl.format(self.per_dct_gdb_u['home_adr'],
                                                                               self.per_dct_gdb_u['work_adr'])
-        #
         #
         #
         # "NAME="
@@ -314,14 +382,41 @@ class Msg:
                              'i_o':     'o',
                              'mch':     platform.node()
                              }
+        if self.f_nam_wav != None:
+            self.msg_data_2db['fnam'] = self.f_nam_wav
+
         if self.anlz_msg_rt_tm_optml_gnrtd != 0:
             self.msg_data_2db['rt_tm'] = int(self.anlz_msg_rt_tm_optml_gnrtd)
+
+            try:    # save word of legit~reacheable address word by word + src + dst + src-to-dst
+                expr = src + ' to ' + dest
+                l_wrd_expr = expr.split()
+                # print 'src: ', src, '   dest: ', dest '   list of words: '
+                for w in l_wrd_expr:
+                    vcb_chk = vcb_clct.find_one({'vcb_val': w.lower()})
+                    if not vcb_chk:                         #
+                        vcb_clct.insert({'vcb_val': w.lower()})
+
+                vcb_chk = vcb_clct.find_one({'vcb_val': src.lower()})
+                if not vcb_chk:                         #```
+                    vcb_clct.insert({'vcb_val': src.lower()})
+
+                vcb_chk = vcb_clct.find_one({'vcb_val': dest.lower()})
+                if not vcb_chk:                         #```
+                    vcb_clct.insert({'vcb_val': dest.lower()})
+
+                vcb_chk = vcb_clct.find_one({'vcb_val': expr.lower()})
+                if not vcb_chk:                         #````
+                    vcb_clct.insert({'vcb_val': expr.lower()})
+
+            except Exception as e:
+                logger.info(e)
+
         try:
             msg_clct.insert(self.msg_data_2db)
         except Exception as e:
             logger.info(e)
 
-        # return self.cre_msg_txt_new, self.rt_tm_optml_gnrtd
 
 
     #
@@ -387,15 +482,21 @@ def main():
             if r.lst_msg_id > int(lst_id):
                 m_flow.init_xtnd(r.lst_msg)
 
-                m_flow.analyze_in_msg()
+                m_flow.chk_msg_type()
+                if m_flow.v_msg_fid != None:
+                    m_flow.v_msg_f_pth = r.bot.get_file(m_flow.v_msg_fid)['file_path']
+                    m_flow.v_msg_rcgz()
+
+                m_flow.analyze_txt_in_msg()
+
                 r.snd_msg(m_flow.anlz_msg_cht_id, m_flow.cre_msg_txt_new)
 
                 r.upd_f_lst_id()
                 lst_id = str(r.lst_msg_id)
 
-        # m_daily.daily_route()
-        # if msg not empty
-        #     r.snd
+                # m_daily.daily_route()
+                # if msg not empty
+                #     r.snd
 
 
 #
