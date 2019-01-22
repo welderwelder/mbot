@@ -23,13 +23,13 @@ str_to_opr = ' to '
 str_out_cmnds = (
                  "<b>work</b> (Calc route from home to work)\n"
                  "<b>home</b> (.. to HOME)\n"
-                 "<b>work=Ben Gurion 5, Holon</b> (set work address)\n"
-                 "<b>home=haifa, Hertzl 156</b> (set HOME address)\n"
+                 "<b>work=Ben Gurion {}, Holon</b> (set work address)\n"
+                 "<b>home=haifa, Hertzl {}</b> (set HOME address)\n"
                  "<b>name=Zvika</b> (set name)\n"
-                 "<b>hilel 13 ramat gan to reut 9 holon</b>\n"
+                 "<b>hilel {} ramat gan to reut {} holon</b>\n"
                  "or VOICE the command !!!\n"
                  )
-str_per_dtl = "\ncurrent home: {}\ncur work: {}\n"
+str_per_dtl = "\n({}) current home: {}\ncur work: {}\n"
 
 b_s = '<b>'
 b_e = '</b>'

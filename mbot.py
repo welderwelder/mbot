@@ -9,7 +9,7 @@ import dfu                          # Data_File_Use: strings constants etc.
 import pymongo
 import urllib
 import speech_recognition as sr     # pip install SpeechRecognition
-import subprocess                   # to run ffmpeg install ffmpeg ? via website+build!
+import subprocess                   # to run ffmpeg install ffmpeg ? via website+build! + apt
 
 reload(sys)                         # after class-ing: err ascii decode heb str
 sys.setdefaultencoding('UTF-8')     # still heb strings log lft->rgt reversed(?)
@@ -332,10 +332,13 @@ class Msg:
                 = self.calc_route(src, dest)
         #              ^^^^^^^^^^
         #
-        # "HELP"
+        # "HELP"/"info"
         elif self.anlz_msg_txt.lower() in dfu.lst_str_hlp_cmd:  # case-insensitive
-            self.cre_msg_txt_new = dfu.str_out_cmnds + dfu.str_per_dtl.format(self.per_dct_gdb_u['home_adr'],
-                                                                              self.per_dct_gdb_u['work_adr'])
+            r1, r2, r3, r4 = tokenbot.get_rndm().split('|')
+            self.cre_msg_txt_new = dfu.str_out_cmnds.format(r1, r2, r3, r4)\
+                                   + dfu.str_per_dtl.format(platform.node()[0],
+                                                            self.per_dct_gdb_u['home_adr'],
+                                                            self.per_dct_gdb_u['work_adr'])
         #
         #
         # "NAME="
