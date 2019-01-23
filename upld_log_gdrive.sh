@@ -64,6 +64,7 @@ else
   running=true
   cnt=0
   while $running; do
+	# --parent sends to spcfc dir. get dir name? "gdrive list": gets ALL elmnts ids(dirs incl)
 	~/./gdrive-linux-x64 upload --parent 1XovHqPKmvwQDN51GkTTSb8Vduc4f4MMv mbot.log > u.log
   	let cnt++
 
