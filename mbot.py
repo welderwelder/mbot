@@ -209,7 +209,6 @@ class Msg:
 
                 rt_lns_all += rt_line_cur
 
-
             o_cre_txt_msg += rt_lns_all
             logger.info(o_cre_txt_msg)
         # except WazeRouteCalculator.WRCError as err:
@@ -248,7 +247,8 @@ class Msg:
     #
     def v_msg_rcgz(self):
         try:
-            f_nam = "voc/msg-" + self.v_msg_fid + '-' + str(self.anlz_msg_cht_id) + '-' + str(datetime.now()) + ".oga"
+            f_nam = "voc/msg-" + platform.node()[0] + '-' + self.v_msg_fid + '-' \
+                                + str(self.anlz_msg_cht_id) + '-' + str(datetime.now()) + ".oga"
             urllib.urlretrieve(self.v_msg_f_pth, f_nam)
             self.f_nam_wav = f_nam.replace(".oga",".wav")
 

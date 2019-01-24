@@ -46,7 +46,7 @@ b_e = '</b>'
 
 str_greeting = (
                 "hello {} iam a mishkas robot  **{}**, your "
-                "msg=`{}`, type <b>info</b> to get commands list"
+                "msg=`<b>{}</b>`, type <b>info</b> to get commands list"
                 )
 
 # str_full_tm_dist = "({}) FROM:   {}\nTO:   {}\n*** Time: {:.0f} min ({:.0f} km)"      #%.2f
