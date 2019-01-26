@@ -72,6 +72,7 @@ class Robot:
             print dfu.str_idx_err.format(datetime.now())
             self.dyn_delay = 10
         except Exception as e:
+            logger.info('get_lst_msg_bot:')
             logger.info(e)
 
     #
@@ -80,6 +81,7 @@ class Robot:
             self.bot.send_message(chat_id=cht_id_to, text=msg_txt_new,
                                   parse_mode=ParseMode.HTML)
         except Exception as e:
+            logger.info('snd_msg:')
             logger.info(e)
 
     #
@@ -154,6 +156,7 @@ class Msg:
         try:
             msg_clct.insert(self.msg_data_2db)
         except Exception as e:
+            logger.info('init_xtnd:')
             logger.info(e)
 
         self.crm_data_2db = {'usr_id':     self.anlz_msg_cht_id,
@@ -214,6 +217,7 @@ class Msg:
         # except WazeRouteCalculator.WRCError as err:
         #     logger.info(err)
         except Exception as e:              # other cases, ex:erroneous input sent ==> abend
+            logger.info('calc_route:')
             logger.info(e)
             o_cre_txt_msg += '\n Error CALC route - check Source/Dest !!'
 
@@ -236,6 +240,7 @@ class Msg:
                 self.to_adrs = self.per_dct_gdb_u['home_adr']
                 self.anlz_msg_from_name = self.per_dct_gdb_u['first_name']
         except Exception as e:
+            logger.info('get_prsn_dtl:')
             logger.info(e)
 
         # prs_get_dct = next((prsn for prsn in tokenbot.p_dtl_dicts_lst if prsn['Id'] == self.anlz_msg_cht_id), None)
@@ -280,6 +285,7 @@ class Msg:
                     #     fine tuning:  mmbr.split + chk num of db fits
                 self.anlz_msg_txt = vcb_fnd
         except Exception as e:
+            logger.info('v_msg_rcgz:')
             logger.info(e)
 
 
@@ -320,14 +326,17 @@ class Msg:
         elif dfu.str_to_opr in self.anlz_msg_txt.lower():
             src = self.anlz_msg_txt.split(dfu.str_to_opr)[0]
             dest = self.anlz_msg_txt.split(dfu.str_to_opr)[1]
-            if any(ele in src.lower() for ele in dfu.lst_str_wrk_cmd):
-                src = self.from_adrs    #work
-            if any(ele in src.lower() for ele in dfu.lst_str_hom_cmd):
-                src = self.to_adrs      #home
-            if any(ele in dest.lower() for ele in dfu.lst_str_wrk_cmd):
-                dest = self.from_adrs    #work
-            if any(ele in dest.lower() for ele in dfu.lst_str_hom_cmd):
-                dest = self.to_adrs      #home
+            # if any(ele in src.lower() for ele in dfu.lst_wrk_spc_str):
+            if src.lower() in dfu.lst_str_wrk_cmd:
+                src = self.from_adrs    #from work
+            if src.lower() in dfu.lst_str_hom_cmd:
+                src = self.to_adrs      #from home
+
+            if dest.lower() in dfu.lst_str_wrk_cmd:
+                dest = self.from_adrs    #to work
+            if dest.lower() in dfu.lst_str_hom_cmd:
+                dest = self.to_adrs      #to home
+
             self.cre_msg_txt_new, self.anlz_msg_rt_tm_optml_gnrtd \
                 = self.calc_route(src, dest)
         #              ^^^^^^^^^^
@@ -374,6 +383,7 @@ class Msg:
                 crm_clct.insert(self.per_dct_gdb_u)
                 self.cre_msg_txt_new = 'Updated Successfully :)'
             except Exception as e:
+                logger.info('upd crm')
                 logger.info(e)
 
         # SAVE MESSAGE --> DB:
@@ -413,11 +423,13 @@ class Msg:
                     vcb_clct.insert({'vcb_val': expr.lower()})
 
             except Exception as e:
+                logger.info('anlz_..insert vcb:')
                 logger.info(e)
 
         try:
             msg_clct.insert(self.msg_data_2db)
         except Exception as e:
+            logger.info('anlz_..insert msg')
             logger.info(e)
 
 

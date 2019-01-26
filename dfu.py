@@ -14,6 +14,7 @@ lst_str_hlp_cmd = [ # 'who', 'what', 'why', 'how', 'where',
 
 lst_str_hom_cmd = ['/home', 'home']
 lst_str_wrk_cmd = ['/work', 'work']
+
 lst_str_upd_hom_cmd = ['home=', 'home =']
 lst_str_upd_wrk_cmd = ['work=', 'work =']
 lst_str_upd_nam_cmd = ['name=', 'name =']
