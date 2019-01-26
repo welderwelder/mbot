@@ -20,8 +20,9 @@ chk_run=`ps x | grep 'python mbot.py' | grep -v "grep"`
                                                         
 if test -z "$chk_run";then
   cd ~/Documents/mbot  
-  dt=$(date +%s)				#echo $dt
-  cp mbot_ign_run.log mbot_ign_run___$dt.log
+  #dt=$(date +%s)				#echo $dt
+   dt=$(date +%y-%m-%d_%H:%M:%S)
+  cp mbot_ign_run.log mbot_ign_run_$dt.log
   #echo 'empty, mbot is NOT running'
   python mbot.py 2>&1 | tee mbot_ign_run.log	# suppose to lo also ABEND
 #else
