@@ -3,19 +3,40 @@
 # locally differs from that one on Google drive and if yes - upload and del old on GD.
 # script would be "cron"ed 'cyclicly' :} 
 
+cd ~/Documents/mbot/voc
+dt=$(date +%y-%m-%d_%H:%M:%S)
+zip wav_$dt.zip *.wav	#do nothing if files not found
+if [ -s wav_$dt.zip ];then
+	# echo "file not empty"                   upload to "voc" gdrv dir
+	# ~/./gdrive-linux-x64  <- - - - - - tali gdrive PATH ~~~~
+	~/Downloads/./gdrive-linux-rpi --parent 1rP8g6zCDCAKCwIDP0hi0_6oOUWsbUy1v wav_$dt.zip  
+	mv *.wav old
+	rm wav_$dt.zip
+    	find old/*.wav -mtime +5 -exec rm {} \;
+fi
+
+
+
+#_____________________________________________________________________________________________
 cd ~/Documents/mbot/tmp
 rm *.txt					# deleting "tmp" content
 rm *.log
 cp ../mbot.log mbot_cur.log
 
+
 echo "_________________________________________________________________ $(date)" >> sh.log
 
 # Get latest version(ID) of mbot.log file on google drive:
 # https://developers.google.com/drive/api/v3/search-parameters -->goodle drv api query parms 
+
 running=true
 cnt=0
+
+
 while $running; do				# try until success(forbidden/nw errors etc.)
-	~/./gdrive-linux-x64 list -m 1 --query "name contains 'mbot.log'" > last_log_dtls.txt
+	# ~/Downloads/./gdrive-linux-rpi  <- - - - - - raspbery pi PATH ~~~~
+	# ~/./gdrive-linux-x64  <- - - - - - tali gdrive PATH ~~~~
+	~/Downloads/./gdrive-linux-rpi list -m 1 --query "name contains 'mbot.log'" > last_log_dtls.txt
 	let cnt++
 	awk 'NR==2' last_log_dtls.txt > last_log_id.txt	   #awk 'NR==2,NR==3' somefile.txt
 	if [ -s last_log_id.txt ];then 		# is file not empty ?
@@ -34,7 +55,7 @@ done						# echo $last_log_id
 running=true
 cnt=0
 while $running; do
-	~/./gdrive-linux-x64 download $last_log_id
+	~/Downloads/./gdrive-linux-rpi download $last_log_id
 	let cnt++
 	if [ -s mbot.log ];then			# is file not empty ?
 	  mv mbot.log mbot_srvr.log
@@ -65,7 +86,7 @@ else
   cnt=0
   while $running; do
 	# --parent sends to spcfc dir. get dir name? "gdrive list": gets ALL elmnts ids(dirs incl)
-	~/./gdrive-linux-x64 upload --parent 1XovHqPKmvwQDN51GkTTSb8Vduc4f4MMv mbot.log > u.log
+	~/Downloads/./gdrive-linux-rpi upload --parent 1XovHqPKmvwQDN51GkTTSb8Vduc4f4MMv mbot.log > u.log
   	let cnt++
 
 	if [ "$cnt" -gt 10 ];then
@@ -85,7 +106,7 @@ fi #[ "$md5_cur" == "$md5_srvr" ]
 running=true
 cnt=0
 while $running; do
-	~/./gdrive-linux-x64 delete $last_log_id > u.log
+	~/Downloads/./gdrive-linux-rpi delete $last_log_id > u.log
 	let cnt++
 	if [ "$cnt" -gt 10 ];then
 	  echo "Error: 10 attempts to UPLOAD mbot.log file to gdrive, $(date)" >> sh.log
