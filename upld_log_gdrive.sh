@@ -3,17 +3,31 @@
 # locally differs from that one on Google drive and if yes - upload and del old on GD.
 # script would be "cron"ed 'cyclicly' :} 
 
+
+running=true
+cnt=0
 cd ~/Documents/mbot/voc
 dt=$(date +%y-%m-%d_%H:%M:%S)
 zip wav_$dt.zip *.wav	#do nothing if files not found
 if [ -s wav_$dt.zip ];then
-	# echo "file not empty"                   upload to "voc" gdrv dir
-	# ~/./gdrive-linux-x64  <- - - - - - tali gdrive PATH ~~~~
-	~/Downloads/./gdrive-linux-rpi --parent 1rP8g6zCDCAKCwIDP0hi0_6oOUWsbUy1v wav_$dt.zip  
-	mv *.wav old
-	rm wav_$dt.zip
-    	find old/*.wav -mtime +5 -exec rm {} \;
+	while $running; do	
+		# echo "file not empty"                   upload to "voc" gdrv dir
+		# ~/./gdrive-linux-x64  <- - - - - - tali gdrive PATH ~~~~
+		~/Downloads/./gdrive-linux-rpi upload --parent 1rP8g6zCDCAKCwIDP0hi0_6oOUWsbUy1v wav_$dt.zip  
+		let cnt++
+		if [ "$cnt" -gt 10 ];then
+		  echo "Error: 10 attempts to UPLOAD wav_$dt.zip file to gdrive, $(date)" >> ../tmp/sh.log
+		  exit
+		fi
+		if grep -q "Uploaded" u.log; then	# does u.log cotains string "Uploaded"
+	  	  mv *.wav old
+		  rm wav_$dt.zip
+		  running=false			
+		fi
+	done
+    	find old/*.wav -mtime +5 -exec rm {} \;		# del files older then 5 days
 fi
+
 
 
 
