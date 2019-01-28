@@ -15,6 +15,7 @@ if [ -s wav_$dt.zip ];then
 		# echo "file not empty"                   upload to "voc" gdrv dir
 		# ~/./gdrive-linux-x64  <- - - - - - tali gdrive PATH ~~~~
 		~/Downloads/./gdrive-linux-rpi upload --parent 1rP8g6zCDCAKCwIDP0hi0_6oOUWsbUy1v wav_$dt.zip  
+		sleep 5
 		let cnt++
 		if [ "$cnt" -gt 10 ];then
 		  echo "Error: 10 attempts to UPLOAD wav_$dt.zip file to gdrive, $(date)" >> ../tmp/sh.log
@@ -51,6 +52,7 @@ while $running; do				# try until success(forbidden/nw errors etc.)
 	# ~/Downloads/./gdrive-linux-rpi  <- - - - - - raspbery pi PATH ~~~~
 	# ~/./gdrive-linux-x64  <- - - - - - tali gdrive PATH ~~~~
 	~/Downloads/./gdrive-linux-rpi list -m 1 --query "name contains 'mbot.log'" > last_log_dtls.txt
+	sleep 5
 	let cnt++
 	awk 'NR==2' last_log_dtls.txt > last_log_id.txt	   #awk 'NR==2,NR==3' somefile.txt
 	if [ -s last_log_id.txt ];then 		# is file not empty ?
@@ -70,6 +72,7 @@ running=true
 cnt=0
 while $running; do
 	~/Downloads/./gdrive-linux-rpi download $last_log_id
+	sleep 5
 	let cnt++
 	if [ -s mbot.log ];then			# is file not empty ?
 	  mv mbot.log mbot_srvr.log
@@ -101,8 +104,8 @@ else
   while $running; do
 	# --parent sends to spcfc dir. get dir name? "gdrive list": gets ALL elmnts ids(dirs incl)
 	~/Downloads/./gdrive-linux-rpi upload --parent 1XovHqPKmvwQDN51GkTTSb8Vduc4f4MMv mbot.log > u.log
+	sleep 5
   	let cnt++
-
 	if [ "$cnt" -gt 10 ];then
 	  echo "Error: 10 attempts to UPLOAD mbot.log file to gdrive, $(date)" >> sh.log
 	  exit
@@ -121,6 +124,7 @@ running=true
 cnt=0
 while $running; do
 	~/Downloads/./gdrive-linux-rpi delete $last_log_id > u.log
+	sleep 5
 	let cnt++
 	if [ "$cnt" -gt 10 ];then
 	  echo "Error: 10 attempts to UPLOAD mbot.log file to gdrive, $(date)" >> sh.log
