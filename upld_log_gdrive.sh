@@ -11,21 +11,21 @@ dt=$(date +%y-%m-%d_%H:%M:%S)
 zip wav_$dt.zip *.wav	#do nothing if files not found
 if [ -s wav_$dt.zip ];then
  	mv *.wav old	
-	while $running; do	
+	#while $running; do	
 		# echo "file not empty"                   upload to "voc" gdrv dir
 		# ~/./gdrive-linux-x64  <- - - - - - tali gdrive PATH ~~~~
 		~/Downloads/./gdrive-linux-rpi upload --parent 1rP8g6zCDCAKCwIDP0hi0_6oOUWsbUy1v wav_$dt.zip  
-		if grep -q "Uploaded" u.log; then	# does u.log cotains string "Uploaded"
-		  rm wav_$dt.zip
-		  running=false			
-		fi
-		sleep 10
-		let cnt++
-		if [ "$cnt" -gt 10 ];then
-		  echo "Error: 10 attempts to UPLOAD wav_$dt.zip file to gdrive, $(date)" >> ../tmp/sh.log
-		  exit
-		fi
-	done
+	#	if grep -q "Uploaded" u.log; then	# does u.log cotains string "Uploaded"
+	#	  rm wav_$dt.zip
+	#	  running=false			
+	#	fi
+	#	sleep 10
+	#	let cnt++
+	#	if [ "$cnt" -gt 10 ];then
+	#	  echo "Error: 10 attempts to UPLOAD wav_$dt.zip file to gdrive, $(date)" >> ../tmp/sh.log
+	#	  exit
+	#	fi
+	#done
     	find old/*.wav -mtime +5 -exec rm {} \;		# del files older then 5 days
 fi
 
