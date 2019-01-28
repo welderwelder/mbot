@@ -10,6 +10,7 @@ cd ~/Documents/mbot/voc
 dt=$(date +%y-%m-%d_%H:%M:%S)
 zip wav_$dt.zip *.wav	#do nothing if files not found
 if [ -s wav_$dt.zip ];then
+ 	mv *.wav old	
 	while $running; do	
 		# echo "file not empty"                   upload to "voc" gdrv dir
 		# ~/./gdrive-linux-x64  <- - - - - - tali gdrive PATH ~~~~
@@ -20,7 +21,6 @@ if [ -s wav_$dt.zip ];then
 		  exit
 		fi
 		if grep -q "Uploaded" u.log; then	# does u.log cotains string "Uploaded"
-	  	  mv *.wav old
 		  rm wav_$dt.zip
 		  running=false			
 		fi
