@@ -27,6 +27,7 @@ if [ -s wav_$dt.zip ];then
 	#	fi
 	#done
     	find old/*.wav -mtime +5 -exec rm {} \;		# del files older then 5 days
+	find wav*.zip -mtime +5 -exec rm {} \;
 fi
 
 
@@ -35,7 +36,8 @@ fi
 #________________________________________________________________________________________________________
 cd ~/Documents/mbot/tmp
 rm *.txt					# deleting "tmp" content
-rm mbot_cur.log					# instead *.log ?
+rm mbot_cur.log					
+rm mbot_srvr.log
 cp ../mbot.log mbot_cur.log
 
 
