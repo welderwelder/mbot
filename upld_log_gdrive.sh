@@ -19,7 +19,7 @@ if [ -s wav_$dt.zip ];then
 		  rm wav_$dt.zip
 		  running=false			
 		fi
-		sleep 5
+		sleep 10
 		let cnt++
 		if [ "$cnt" -gt 10 ];then
 		  echo "Error: 10 attempts to UPLOAD wav_$dt.zip file to gdrive, $(date)" >> ../tmp/sh.log
@@ -32,10 +32,10 @@ fi
 
 
 
-#_____________________________________________________________________________________________
+#________________________________________________________________________________________________________
 cd ~/Documents/mbot/tmp
 rm *.txt					# deleting "tmp" content
-rm *.log
+rm mbot_cur.log					# instead *.log ?
 cp ../mbot.log mbot_cur.log
 
 
@@ -46,13 +46,11 @@ echo "_________________________________________________________________ $(date)"
 
 running=true
 cnt=0
-
-
 while $running; do				# try until success(forbidden/nw errors etc.)
 	# ~/Downloads/./gdrive-linux-rpi  <- - - - - - raspbery pi PATH ~~~~
 	# ~/./gdrive-linux-x64  <- - - - - - tali gdrive PATH ~~~~
 	~/Downloads/./gdrive-linux-rpi list -m 1 --query "name contains 'mbot.log'" > last_log_dtls.txt
-	sleep 5
+	sleep 10
 	let cnt++
 	awk 'NR==2' last_log_dtls.txt > last_log_id.txt	   #awk 'NR==2,NR==3' somefile.txt
 	if [ -s last_log_id.txt ];then 		# is file not empty ?
@@ -71,7 +69,7 @@ running=true
 cnt=0
 while $running; do
 	~/Downloads/./gdrive-linux-rpi download $last_log_id
-	sleep 5
+	sleep 10
 	let cnt++
 	if [ -s mbot.log ];then			# is file not empty ?
 	  mv mbot.log mbot_srvr.log
@@ -105,7 +103,7 @@ else
 	if grep -q "Uploaded" u.log; then	# does u.log cotains string "Uploaded"
 	  running=false			
 	fi
-	sleep 5
+	sleep 10
   	let cnt++
 	if [ "$cnt" -gt 10 ];then
 	  echo "Error: 10 attempts to UPLOAD mbot.log file to gdrive, $(date)" >> sh.log
@@ -122,16 +120,17 @@ running=true
 cnt=0
 while $running; do
 	~/Downloads/./gdrive-linux-rpi delete $last_log_id > u.log
-	sleep 5
+	if grep -q "Deleted" u.log; then	# does u.log cotains string "Deleted"
+	  echo "$last_log_id  deleted from server=OK"
+	  running=false			
+	fi
+	sleep 10
 	let cnt++
 	if [ "$cnt" -gt 10 ];then
 	  echo "Error: 10 attempts to UPLOAD mbot.log file to gdrive, $(date)" >> sh.log
 	  exit
 	fi
-	if grep -q "Deleted" u.log; then	# does u.log cotains string "Deleted"
-	  echo "$last_log_id  deleted from server=OK"
-	  running=false			
-	fi
+
 done
 
 
