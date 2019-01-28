@@ -15,15 +15,15 @@ if [ -s wav_$dt.zip ];then
 		# echo "file not empty"                   upload to "voc" gdrv dir
 		# ~/./gdrive-linux-x64  <- - - - - - tali gdrive PATH ~~~~
 		~/Downloads/./gdrive-linux-rpi upload --parent 1rP8g6zCDCAKCwIDP0hi0_6oOUWsbUy1v wav_$dt.zip  
+		if grep -q "Uploaded" u.log; then	# does u.log cotains string "Uploaded"
+		  rm wav_$dt.zip
+		  running=false			
+		fi
 		sleep 5
 		let cnt++
 		if [ "$cnt" -gt 10 ];then
 		  echo "Error: 10 attempts to UPLOAD wav_$dt.zip file to gdrive, $(date)" >> ../tmp/sh.log
 		  exit
-		fi
-		if grep -q "Uploaded" u.log; then	# does u.log cotains string "Uploaded"
-		  rm wav_$dt.zip
-		  running=false			
 		fi
 	done
     	find old/*.wav -mtime +5 -exec rm {} \;		# del files older then 5 days
@@ -59,7 +59,6 @@ while $running; do				# try until success(forbidden/nw errors etc.)
 	  running=false				# echo "file not empty"  #echo $running
 	  last_log_id=`cat last_log_id.txt | awk -F " " '{print $1}'`
 	fi
-
 	if [ "$cnt" -gt 10 ];then
 	  echo "Error: 10 attempts to get mbot.log ID from gdrive, $(date)" >> sh.log
 	  exit
@@ -78,7 +77,6 @@ while $running; do
 	  mv mbot.log mbot_srvr.log
 	  running=false			
 	fi
-
 	if [ "$cnt" -gt 10 ];then
 	  echo "Error: 10 attempts to get mbot.log FILE from gdrive, $(date)" >> sh.log
 	  exit
@@ -104,6 +102,9 @@ else
   while $running; do
 	# --parent sends to spcfc dir. get dir name? "gdrive list": gets ALL elmnts ids(dirs incl)
 	~/Downloads/./gdrive-linux-rpi upload --parent 1XovHqPKmvwQDN51GkTTSb8Vduc4f4MMv mbot.log > u.log
+	if grep -q "Uploaded" u.log; then	# does u.log cotains string "Uploaded"
+	  running=false			
+	fi
 	sleep 5
   	let cnt++
 	if [ "$cnt" -gt 10 ];then
@@ -111,9 +112,6 @@ else
 	  exit
 	fi
 
-	if grep -q "Uploaded" u.log; then	# does u.log cotains string "Uploaded"
-	  running=false			
-	fi
   done
 fi #[ "$md5_cur" == "$md5_srvr" ]
 
@@ -130,7 +128,6 @@ while $running; do
 	  echo "Error: 10 attempts to UPLOAD mbot.log file to gdrive, $(date)" >> sh.log
 	  exit
 	fi
-
 	if grep -q "Deleted" u.log; then	# does u.log cotains string "Deleted"
 	  echo "$last_log_id  deleted from server=OK"
 	  running=false			
