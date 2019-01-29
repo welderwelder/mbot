@@ -9,7 +9,7 @@ str_idx_err = (
                 "server(?). NOT logged, {:%d.%m.%Y %H:%M:%S}"
                 )
 lst_str_hlp_cmd = [ # 'who', 'what', 'why', 'how', 'where',
-                     '.*\?', 'info', '/info', '/commands', 'commands',
+                     '.*\?', 'info', 'i', '/info', '/commands', 'commands',
                      '/help', '--help', '-help', 'help']
 
 lst_str_hom_cmd = ['/home', 'home']
