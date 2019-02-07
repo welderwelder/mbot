@@ -21,6 +21,21 @@ lst_str_upd_nam_cmd = ['name=', 'name =']
 # lst_str_to_cmd = [' to ', '--']
 str_to_opr = ' to '
 
+
+d_abbrv = {
+            'jer': 'jerusalem',
+            'ta':  'tel aviv',
+            'tlv': 'tel aviv',
+            'by':  'bat yam',
+            'pt':  'petah tikva',
+            'bs':  'beer sheva',
+            'ka':  'kiryat arba',
+            'ks':  'kiryat shmone',
+            'ba':  'bney aysh',
+            'rlz': 'rishon leziyon',
+            'rg':  'ramat gan'
+           }
+
 str_out_cmnds = (
                  "<b>work</b> (Calc route from home to work)\n"
                  "<b>home</b> (.. to HOME)\n"

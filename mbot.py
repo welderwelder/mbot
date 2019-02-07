@@ -313,7 +313,7 @@ class Msg:
           self.cre_msg_txt_new += '.\n\nYou were added to the SYSTEM.'
 
         #
-        # "home"/"work"     DEFAULT=work-2-home (or  s w a p)...
+        # "home" <---> "work"     DEFAULT=work-2-home (or  s w a p)...
         if self.anlz_msg_txt.lower() in (dfu.lst_str_hom_cmd + dfu.lst_str_wrk_cmd):
             if self.anlz_msg_txt.lower() in dfu.lst_str_wrk_cmd:
                 self.from_adrs, self.to_adrs = self.to_adrs, self.from_adrs     # S W A P !!!
@@ -324,8 +324,19 @@ class Msg:
         #
         # "src to dest" ------->
         elif dfu.str_to_opr in self.anlz_msg_txt.lower():
-            src = self.anlz_msg_txt.split(dfu.str_to_opr)[0]
-            dest = self.anlz_msg_txt.split(dfu.str_to_opr)[1]
+            l_msg_txt_splt = self.anlz_msg_txt.split()
+            print l_msg_txt_splt
+            i = 0
+            for w in l_msg_txt_splt:
+                if w.lower() in dfu.d_abbrv:
+                    l_msg_txt_splt[i] = dfu.d_abbrv[w.lower()]
+                i += 1
+            str_msg_txt_chkd = ' '.join(l_msg_txt_splt)
+
+            # src = self.anlz_msg_txt.split(dfu.str_to_opr)[0]
+            # dest = self.anlz_msg_txt.split(dfu.str_to_opr)[1]
+            src = str_msg_txt_chkd.split(dfu.str_to_opr)[0]
+            dest = str_msg_txt_chkd.split(dfu.str_to_opr)[1]
             # if any(ele in src.lower() for ele in dfu.lst_wrk_spc_str):
             if src.lower() in dfu.lst_str_wrk_cmd:
                 src = self.from_adrs    #from work
@@ -418,9 +429,15 @@ class Msg:
                 if not vcb_chk:                         #```
                     vcb_clct.insert({'vcb_val': dest.lower()})
 
-                vcb_chk = vcb_clct.find_one({'vcb_val': expr.lower()})
-                if not vcb_chk:                         #````
-                    vcb_clct.insert({'vcb_val': expr.lower()})
+
+                # vcb_chk = vcb_clct.find_one({'vcb_val': expr.lower()})
+                # if not vcb_chk:                         #````
+                vcb_data_2db = {'vcb_val': expr.lower(),
+                                'rt_tm':   int(self.anlz_msg_rt_tm_optml_gnrtd),
+                                'ts':      datetime.now(),
+                                }
+                vcb_clct.insert(vcb_data_2db)
+
 
             except Exception as e:
                 logger.info('anlz_..insert vcb:')
