@@ -2,9 +2,9 @@
 
 Telegram bot("@Mataftaxibot") prog
 
-You ask~: "source to dest" and it returns Waze calculated detailed routes list with route times.
+You ask: "source to dest" and it returns Waze calculated detailed routes list with route times.
 
-define "home=adr1", "work=adr2" for (unfortunatelly:) mostly used routes
+define: "home=adr1", "work=adr2" for (unfortunatelly:) mostly used routes
 
 voice recognition support - just ask it for route !
 
