@@ -1,10 +1,21 @@
 # mbot
-simple telegram bot 'conversator': python \ polling(sampling the status) to controll the bot 
 
-conversation: bot only fetches message was sent to it and returns it to a sender while 
-performing simple checks of message content: if particular strings received, 
-message sender id.
+Telegram bot("@Mataftaxibot") prog
 
-logging into file
+You ask~: "source to dest" and it returns Waze calculated detailed routes list with route times.
 
-log file upload to google drive by gdrive script daily
+define "home=~adr1~", "work=~adr2~" for (unfortunatelly:) mostly used routes
+
+voice recognition support - just ask it for route
+
+conversations saved to MongoDB
+
+multiple word city names abbreviation supported (ex:"ny")
+
+log + voice commands files uploaded to Google Drive (by gdrive script)
+
+area=Israel
+ 
+runs on Raspberry PI
+
+thumbs up to kovacsbalu for WazeRouteCalculator !
