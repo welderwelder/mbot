@@ -12,8 +12,8 @@ lst_str_hlp_cmd = [ # 'who', 'what', 'why', 'how', 'where',
                      '.*\?', 'info', 'i', '/info', '/commands', 'commands',
                      '/help', '--help', '-help', 'help']
 
-lst_str_hom_cmd = ['/home', 'home']
-lst_str_wrk_cmd = ['/work', 'work']
+lst_str_hom_cmd = ['/home', 'home', 'hom', 'h']
+lst_str_wrk_cmd = ['/work', 'work', 'wrk', 'w']
 
 lst_str_upd_hom_cmd = ['home=', 'home =']
 lst_str_upd_wrk_cmd = ['work=', 'work =']
@@ -50,14 +50,16 @@ str_per_dtl = "\n({}) current home: {}\ncur work: {}\n"
 b_s = '<b>'
 b_e = '</b>'
 
-# daily_rt_scdl_hh_str = '14'       # 15:mm   # strftime('%H:%M') ~"2018-11-07 11:57:53.238483~
+# daily_rt_scdl_hh_str = '14'       # 15:mm   # dt_tm_~.strftime('%H:%M') ~"2018-11-07 11:57:53.238483~
+dr_scdl_tm_start = [14, 45]         # 14:45
+dr_scdl_tm_end = [17, 05]
 # daily_rt_scdl_mm_max_str = '45'   # HH:45
 #
-# tm_sample_delta_hh = 0
-# tm_sample_delta_mm = 1
-# tm_sample_delta_ss = 15
+tm_delta_hh = 0
+tm_delta_mm = 0
+tm_delta_ss = 5
 #
-# rt_tm_long = 40
+rt_tm_long = 40
 
 
 str_greeting = (

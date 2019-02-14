@@ -58,6 +58,12 @@ class Robot:
 
     #
     def get_lst_msg_bot(self):
+        # try:
+        #     data = urllib.urlopen("https://www.google.com")
+        # except e:
+        #     logger.info('get_lst_msg_bot: NO NETWORK')
+        #     logger.info(e)
+
         self.skippy = True
         try:
             # self.lst_msg = self.bot.get_updates()[-1].message     # take whole buffer(srvr_max=100) and take last.
@@ -74,6 +80,7 @@ class Robot:
         except Exception as e:
             logger.info('get_lst_msg_bot:')
             logger.info(e)
+
 
     #
     def snd_msg(self, cht_id_to, msg_txt_new):
@@ -113,18 +120,20 @@ class Robot:
 #
 #
 # _________________________________________________________________________________________________________________
-class Msg:
-    def __init__(self):
-        self.from_adrs = tokenbot.from_address_dflt
-        self.to_adrs = tokenbot.to_address_dflt
+class Msg():
+    def __init__(self, inst_name):
+        self.inst_name = inst_name
+        self.from_adrs = self.src = tokenbot.from_address_dflt
+        self.to_adrs = self.dest = tokenbot.to_address_dflt
 
         self.cre_msg_txt_new = '`Default message`'
 
         # daily functionality:
-        self.daily_dd_done = '00'                     # for daily_route() use
-        self.dt_tm_now_prv = datetime.now()           # first time set:  ~~prevoius `now`~~
-        self.daily_rt_tm = 0.0
-        self.daily_rt_tm_prv = 0.0
+        # self.daily_dd_done = '00'                     # for daily_route() use
+        self.dr_sw_warn_1 = False
+        self.dr_now_prv = datetime.now() - timedelta(days=1)
+        self.dr_rt_tm = 0.0
+        self.dr_rt_tm_prv = 0.0
 
     #
     def init_xtnd(self, i_analyze_msg_r):
@@ -180,9 +189,10 @@ class Msg:
                                         )
         rt_tm_optml = 0      # set val for case of abend while eeroneous input:"bashkilon"~~
         try:
-            route = WazeRouteCalculator.WazeRouteCalculator(i_from_adrs,
-                                                            i_to_adrs,
-                                                            'IL'    # region
+            route = WazeRouteCalculator.WazeRouteCalculator(i_from_adrs
+                                                            , i_to_adrs
+                                                            , 'IL'       # region
+                                                            , log_lvl=None
                                                             )
             rt_tm_optml, rt_dist_optml = route.calc_route_info()      # tuple
             all_rts_d = route.calc_all_routes_info()      # dict
@@ -213,7 +223,8 @@ class Msg:
                 rt_lns_all += rt_line_cur
 
             o_cre_txt_msg += rt_lns_all
-            logger.info(o_cre_txt_msg)
+            if self.inst_name != 'dr':
+                logger.info(o_cre_txt_msg)
         # except WazeRouteCalculator.WRCError as err:
         #     logger.info(err)
         except Exception as e:              # other cases, ex:erroneous input sent ==> abend
@@ -317,11 +328,9 @@ class Msg:
         if self.anlz_msg_txt.lower() in (dfu.lst_str_hom_cmd + dfu.lst_str_wrk_cmd):
             if self.anlz_msg_txt.lower() in dfu.lst_str_wrk_cmd:
                 self.from_adrs, self.to_adrs = self.to_adrs, self.from_adrs     # S W A P !!!
-            src, dest = self.from_adrs, self.to_adrs
-            self.cre_msg_txt_new, self.anlz_msg_rt_tm_optml_gnrtd\
-                = self.calc_route(src, dest)                 #[0]
-        #              ^^^^^^^^^^
-        #
+            self.src, self.dest = self.from_adrs, self.to_adrs
+            self.cre_msg_txt_new, self.anlz_msg_rt_tm_optml_gnrtd= self.calc_route(self.src, self.dest)
+        #                                                               ^^^^^^^^^^
         # "src to dest" ------->
         elif dfu.str_to_opr in self.anlz_msg_txt.lower():
             l_msg_txt_splt = self.anlz_msg_txt.split()
@@ -333,24 +342,21 @@ class Msg:
                 i += 1
             str_msg_txt_chkd = ' '.join(l_msg_txt_splt)
 
-            # src = self.anlz_msg_txt.split(dfu.str_to_opr)[0]
-            # dest = self.anlz_msg_txt.split(dfu.str_to_opr)[1]
-            src = str_msg_txt_chkd.split(dfu.str_to_opr)[0]
-            dest = str_msg_txt_chkd.split(dfu.str_to_opr)[1]
+            self.src = str_msg_txt_chkd.split(dfu.str_to_opr)[0]
+            self.dest = str_msg_txt_chkd.split(dfu.str_to_opr)[1]
             # if any(ele in src.lower() for ele in dfu.lst_wrk_spc_str):
-            if src.lower() in dfu.lst_str_wrk_cmd:
-                src = self.from_adrs    #from work
-            if src.lower() in dfu.lst_str_hom_cmd:
-                src = self.to_adrs      #from home
+            if self.src.lower() in dfu.lst_str_wrk_cmd:
+                self.src = self.from_adrs    #from work
+            if self.src.lower() in dfu.lst_str_hom_cmd:
+                self.src = self.to_adrs      #from home
 
-            if dest.lower() in dfu.lst_str_wrk_cmd:
-                dest = self.from_adrs    #to work
-            if dest.lower() in dfu.lst_str_hom_cmd:
-                dest = self.to_adrs      #to home
+            if self.dest.lower() in dfu.lst_str_wrk_cmd:
+                self.dest = self.from_adrs    #to work
+            if self.dest.lower() in dfu.lst_str_hom_cmd:
+                self.dest = self.to_adrs      #to home
 
-            self.cre_msg_txt_new, self.anlz_msg_rt_tm_optml_gnrtd \
-                = self.calc_route(src, dest)
-        #              ^^^^^^^^^^
+            self.cre_msg_txt_new, self.anlz_msg_rt_tm_optml_gnrtd = self.calc_route(self.src, self.dest)
+        #                                                                ^^^^^^^^^^
         #
         # "HELP"/"info"
         elif self.anlz_msg_txt.lower() in dfu.lst_str_hlp_cmd:  # case-insensitive
@@ -359,7 +365,6 @@ class Msg:
                                    + dfu.str_per_dtl.format(platform.node()[0],
                                                             self.per_dct_gdb_u['home_adr'],
                                                             self.per_dct_gdb_u['work_adr'])
-        #
         #
         # "NAME="
         elif (any(ele in self.anlz_msg_txt.lower() for ele in dfu.lst_str_upd_nam_cmd) and
@@ -397,14 +402,19 @@ class Msg:
                 logger.info('upd crm')
                 logger.info(e)
 
+        self.ins_msg_db()
+
+
+    #
+    def ins_msg_db(self):
         # SAVE MESSAGE --> DB:
         # self.msg_data_2db.update({ --- causes duplicate key ~~ _id added automatically?~
-        self.msg_data_2db = {'usr_id':  self.anlz_msg_cht_id,
-                             'msg_id':  self.anlz_msg_id,
-                             'txt':     self.cre_msg_txt_new,   # new generated text of message!
-                             'ts':      datetime.now(),
-                             'i_o':     'o',
-                             'mch':     platform.node()
+        self.msg_data_2db = {'usr_id': self.anlz_msg_cht_id,
+                             'msg_id': self.anlz_msg_id,
+                             'txt': self.cre_msg_txt_new,  # new generated text of message!
+                             'ts': datetime.now(),
+                             'i_o': 'o',
+                             'mch': platform.node()
                              }
         if self.f_nam_wav != None:
             self.msg_data_2db['fnam'] = self.f_nam_wav
@@ -412,32 +422,27 @@ class Msg:
         if self.anlz_msg_rt_tm_optml_gnrtd != 0:
             self.msg_data_2db['rt_tm'] = int(self.anlz_msg_rt_tm_optml_gnrtd)
 
-            try:    # save word of legit~reacheable address word by word + src + dst + src-to-dst
-                expr = src + ' to ' + dest
-                l_wrd_expr = expr.split()
-                # print 'src: ', src, '   dest: ', dest '   list of words: '
+            try:  # save word of legit~reacheable address word by word + src + dst + src-to-dst
+                expr = self.src + ' to ' + self.dest
+                l_wrd_expr = expr.split()   # print 'src: ', src, ' dest: ', dest ' list of words: '
                 for w in l_wrd_expr:
                     vcb_chk = vcb_clct.find_one({'vcb_val': w.lower()})
-                    if not vcb_chk:                         #
+                    if not vcb_chk:  #
                         vcb_clct.insert({'vcb_val': w.lower()})
 
-                vcb_chk = vcb_clct.find_one({'vcb_val': src.lower()})
-                if not vcb_chk:                         #```
-                    vcb_clct.insert({'vcb_val': src.lower()})
+                vcb_chk = vcb_clct.find_one({'vcb_val': self.src.lower()})
+                if not vcb_chk:  # ```
+                    vcb_clct.insert({'vcb_val': self.src.lower()})
 
-                vcb_chk = vcb_clct.find_one({'vcb_val': dest.lower()})
-                if not vcb_chk:                         #```
-                    vcb_clct.insert({'vcb_val': dest.lower()})
+                vcb_chk = vcb_clct.find_one({'vcb_val': self.dest.lower()})
+                if not vcb_chk:  # ```
+                    vcb_clct.insert({'vcb_val': self.dest.lower()})
 
-
-                # vcb_chk = vcb_clct.find_one({'vcb_val': expr.lower()})
-                # if not vcb_chk:                         #````
                 vcb_data_2db = {'vcb_val': expr.lower(),
-                                'rt_tm':   int(self.anlz_msg_rt_tm_optml_gnrtd),
-                                'ts':      datetime.now(),
+                                'rt_tm': int(self.anlz_msg_rt_tm_optml_gnrtd),    # for statistical use!!
+                                'ts': datetime.now(),
                                 }
                 vcb_clct.insert(vcb_data_2db)
-
 
             except Exception as e:
                 logger.info('anlz_..insert vcb:')
@@ -450,46 +455,41 @@ class Msg:
             logger.info(e)
 
 
-
     #
     def daily_route(self):
-        self.dt_tm_now = datetime.now()
-        self.dt_tm_now_dd = self.dt_tm_now.strftime('%d')
+        self.anlz_msg_cht_id = tokenbot.dr_usr_id
+        self.get_prsn_dtl()
+        self.dr_now = datetime.now()
+        self.dr_start = self.dr_now.replace(hour=dfu.dr_scdl_tm_start[0], minute=dfu.dr_scdl_tm_start[1])
+        self.dr_end = self.dr_now.replace(hour=dfu.dr_scdl_tm_end[0], minute=dfu.dr_scdl_tm_end[1])
 
-        # TODO: init dt_tm_now_prv when date changes!!!
         # 'daily' TIMING is on:
-        if ( self.dt_tm_now.strftime('%H') == dfu.daily_rt_scdl_hh_str and      # 15:mm
-             self.dt_tm_now.strftime('%M') < dfu.daily_rt_scdl_mm_max_str ):    # HH:45
-            # 'daily' NOT treated yet(by DD of cur date):
-            if self.daily_dd_done != self.dt_tm_now_dd:
-                # time interval reached:
-                if self.dt_tm_now_prv < self.dt_tm_now - timedelta(hours=dfu.tm_sample_delta_hh,
-                                                             minutes=dfu.tm_sample_delta_mm,
-                                                             seconds=dfu.tm_sample_delta_ss):
-                    self.daily_rt_tm = self.calc_route(self.from_adrs, self.to_adrs)[1]
-                    # print daily_rt_tm
+        if (self.dr_start < self.dr_now < self.dr_end and
+            0 < self.dr_now.weekday()+2 < 6):                   #starts from 0, 1st dow=monday
+            # time interval reached?:
+            if self.dr_now_prv < self.dr_now - timedelta(minutes=dfu.tm_delta_mm, seconds=dfu.tm_delta_ss):
+                self.cre_msg_txt_new, self.dr_rt_tm = self.calc_route(self.from_adrs, self.to_adrs)
+                # print int(self.dr_rt_tm)
 
-                    # TODO:
-                    # if (first time for cur day and
-                    #     self.daily_rt_tm > self.dfu.rt_tm_long ):
-                    #     warning!
-                    #
-                    # self.daily_dd___ = self.dt_tm_now_dd    # 're-updated' but only when daily 'occurs'
+                # first time for cur day: prv(d)<>now(d) ==> first time only!
+                if (self.dr_now_prv.strftime('%D') != self.dr_now.strftime('%D') and
+                    self.dr_rt_tm > dfu.rt_tm_long ):
+                    self.dr_sw_warn_1 = True        # self.dr_warn_ts = self.dr_now
+                    # print int(self.dr_rt_tm)
 
-                        # TODO: init daily_rt_tm_prv when date changes!!!
-                        # DELTA check ?????:
+                # self.daily_dd___ = self.dt_tm_now_dd    # 're-updated' but only when daily 'occurs'
 
-                        # if self.daily_rt_tm > self.daily_rt_tm_prv + 1.1:
-                        # print 'cur=', self.daily_rt_tm, '   prv=', self.daily_rt_tm_prv
-                        # self.daily_rt_tm_prv = self.daily_rt_tm
 
-                        # self.dt_tm_now_prv = self.dt_tm_now
+                    # if self.dr_rt_tm > self.dr_rt_tm_prv + 1.1:
+                    # print 'cur=', self.dr_rt_tm, '   prv=', self.dr_rt_tm_prv
+                    # self.dr_rt_tm_prv = self.dr_rt_tm
 
-                        #             # self.snd_msg(tokenbot.hi_auth_id_lst[0], Msg?.cre_msg_txt_new)
-                        #             self.daily_dd_done = datetime.now().strftime('%d')
-                        # if route_calc_warning_y
-                        #     r.snd_msg
+                    #             # self.snd_msg(tokenbot.hi_auth_id_lst[0], Msg?.cre_msg_txt_new)
+                    #             self.daily_dd_done = datetime.now().strftime('%d')
+                    # if route_calc_warning_y
+                    #     r.snd_msg
 
+            self.dr_now_prv = self.dr_now
 
 #
 # ___________________________________________________________________________
@@ -501,8 +501,8 @@ def main():
 
     r = Robot(tokenbot.token_bot)
 
-    m_flow = Msg()
-    # m_daily = Msg()
+    m_flow = Msg('flw')
+    m_dr = Msg('dr')    #daily route
 
     lst_id = r.get_f_lst_id()
 
@@ -526,9 +526,10 @@ def main():
                 r.upd_f_lst_id()
                 lst_id = str(r.lst_msg_id)
 
-                # m_daily.daily_route()
-                # if msg not empty
-                #     r.snd
+        m_dr.daily_route()
+        if m_dr.dr_sw_warn_1:
+            r.snd_msg(m_dr.anlz_msg_cht_id, m_dr.cre_msg_txt_new)
+            m_dr.dr_sw_warn_1 = False
 
 
 #
