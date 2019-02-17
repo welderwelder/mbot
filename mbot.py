@@ -466,11 +466,11 @@ class Msg():
 
         # 'daily' TIMING is on:
         if (self.dr_start < self.dr_now < self.dr_end and
-                        0 < self.dr_now.weekday()+2 < 6):                   #starts from 0, 1st dow=monday
+                        self.dr_now.weekday() not in [4,5]):           #starts from 0, 1st dow=monday
             # time interval reached?:
             if self.dr_now_prv < self.dr_now - timedelta(minutes=dfu.tm_delta_mm, seconds=dfu.tm_delta_ss):
                 self.cre_msg_txt_new, self.dr_rt_tm = self.calc_route(self.from_adrs, self.to_adrs)
-
+                print 'dr: ', int(self.dr_rt_tm), ' ', self.dr_now
                 # first time for cur day: prv(d)<>now(d) ==> first time only!
                 if self.dr_now_prv.strftime('%D') != self.dr_now.strftime('%D'):
                     self.dr_l_tms = [0, 0, 0]
@@ -486,22 +486,9 @@ class Msg():
                         self.dr_sw_warn = True
                         self.cre_msg_txt_new = 'WARNING!!!\n   WARNING!!!\n' + self.cre_msg_txt_new
 
-
             self.dr_now_prv = self.dr_now
 
 
-
-
-                # self.daily_dd___ = self.dt_tm_now_dd    # 're-updated' but only when daily 'occurs'
-
-                # if self.dr_rt_tm > self.dr_rt_tm_prv + 1.1:
-                # print 'cur=', self.dr_rt_tm, '   prv=', self.dr_rt_tm_prv
-                # self.dr_rt_tm_prv = self.dr_rt_tm
-
-                #             # self.snd_msg(tokenbot.hi_auth_id_lst[0], Msg?.cre_msg_txt_new)
-                #             self.daily_dd_done = datetime.now().strftime('%d')
-                # if route_calc_warning_y
-                #     r.snd_msg
 
 
     #
