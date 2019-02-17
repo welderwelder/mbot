@@ -51,15 +51,17 @@ b_s = '<b>'
 b_e = '</b>'
 
 # daily_rt_scdl_hh_str = '14'       # 15:mm   # dt_tm_~.strftime('%H:%M') ~"2018-11-07 11:57:53.238483~
-dr_scdl_tm_start = [14, 45]         # 14:45
-dr_scdl_tm_end = [17, 05]
+dr_scdl_tm_start = [14, 40]         # 14:45
+dr_scdl_tm_end = [16, 25]
 # daily_rt_scdl_mm_max_str = '45'   # HH:45
 #
 tm_delta_hh = 0
-tm_delta_mm = 0
-tm_delta_ss = 5
+tm_delta_mm = 1
+tm_delta_ss = 25
 #
 rt_tm_long = 40
+
+jmp_prc = 1.1
 
 
 str_greeting = (

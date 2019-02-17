@@ -130,10 +130,11 @@ class Msg():
 
         # daily functionality:
         # self.daily_dd_done = '00'                     # for daily_route() use
-        self.dr_sw_warn_1 = False
+        self.dr_sw_warn = False
         self.dr_now_prv = datetime.now() - timedelta(days=1)
         self.dr_rt_tm = 0.0
         self.dr_rt_tm_prv = 0.0
+        self.dr_l_tms = [0, 0, 0]
 
     #
     def init_xtnd(self, i_analyze_msg_r):
@@ -206,7 +207,7 @@ class Msg():
                         pass                                        # ==> chg by 2nd byte. replace func cannot chg 2bytes(?)
                     elif chr in dfu.dict_heb_chr_u8_ucode.keys():   # u'\x93':
                         rt_line += dfu.dict_heb_chr_u8_ucode[chr]     # u'\u05D3'
-                    # elif chr.isdigit():
+                        # elif chr.isdigit():
                         # rt_ln += u'\u05D9' + chr + u'\u05D9'      # attempt to fix directions of hebstr with numbrs
                     else:
                         rt_line += chr                    # rt_ln = rt_ln[::-1] # reverse string - print=rvrsd, send=ok
@@ -240,8 +241,8 @@ class Msg():
         # prs_dct_lst = filter(lambda person: person['Id'] == self.anlz_msg_cht_id, tokenbot.p_dtl_dicts_lst)
         try:
             self.per_dct_gdb_u = crm_clct.find_one({'usr_id': self.anlz_msg_cht_id, 'ver': 0}, {'_id':0})
-                                                                                            # projection~filter-out
-                                                                     #.limit(1)  #lmt instd: find_one - performance
+            # projection~filter-out
+            #.limit(1)  #lmt instd: find_one - performance
             if self.per_dct_gdb_u == None:
                 crm_clct.insert(self.crm_data_2db)
                 self.sw_fst_tm_crm_ins = True
@@ -254,17 +255,17 @@ class Msg():
             logger.info('get_prsn_dtl:')
             logger.info(e)
 
-        # prs_get_dct = next((prsn for prsn in tokenbot.p_dtl_dicts_lst if prsn['Id'] == self.anlz_msg_cht_id), None)
-        # if prs_get_dct:
-        #     self.from_adrs = prs_get_dct["Work"]
-        #     self.to_adrs = prs_get_dct["Home"]
+            # prs_get_dct = next((prsn for prsn in tokenbot.p_dtl_dicts_lst if prsn['Id'] == self.anlz_msg_cht_id), None)
+            # if prs_get_dct:
+            #     self.from_adrs = prs_get_dct["Work"]
+            #     self.to_adrs = prs_get_dct["Home"]
 
 
     #
     def v_msg_rcgz(self):
         try:
             f_nam = "voc/msg-" + platform.node()[0] + '-' + self.v_msg_fid + '-' \
-                                + str(self.anlz_msg_cht_id) + '-' + str(datetime.now()) + ".oga"
+                    + str(self.anlz_msg_cht_id) + '-' + str(datetime.now()) + ".oga"
             urllib.urlretrieve(self.v_msg_f_pth, f_nam)
             self.f_nam_wav = f_nam.replace(".oga",".wav")
 
@@ -292,8 +293,8 @@ class Msg():
                         print mmbr
                         # [u'rehovot to Ramat Gan', u'rehovot to Ramat gun', u'to Ramat Gan']
                         # TODO:
-                    # else:
-                    #     fine tuning:  mmbr.split + chk num of db fits
+                        # else:
+                        #     fine tuning:  mmbr.split + chk num of db fits
                 self.anlz_msg_txt = vcb_fnd
         except Exception as e:
             logger.info('v_msg_rcgz:')
@@ -321,7 +322,7 @@ class Msg():
                                                        self.anlz_msg_txt
                                                        )
         if self.sw_fst_tm_crm_ins:
-          self.cre_msg_txt_new += '.\n\nYou were added to the SYSTEM.'
+            self.cre_msg_txt_new += '.\n\nYou were added to the SYSTEM.'
 
         #
         # "home" <---> "work"     DEFAULT=work-2-home (or  s w a p)...
@@ -361,28 +362,28 @@ class Msg():
         # "HELP"/"info"
         elif self.anlz_msg_txt.lower() in dfu.lst_str_hlp_cmd:  # case-insensitive
             r1, r2, r3, r4 = tokenbot.get_rndm().split('|')
-            self.cre_msg_txt_new = dfu.str_out_cmnds.format(r1, r2, r3, r4)\
+            self.cre_msg_txt_new = dfu.str_out_cmnds.format(r1, r2, r3, r4) \
                                    + dfu.str_per_dtl.format(platform.node()[0],
                                                             self.per_dct_gdb_u['home_adr'],
                                                             self.per_dct_gdb_u['work_adr'])
         #
         # "NAME="
         elif (any(ele in self.anlz_msg_txt.lower() for ele in dfu.lst_str_upd_nam_cmd) and
-              not(self.sw_fst_tm_crm_ins)):
+                  not(self.sw_fst_tm_crm_ins)):
             self.crm_data_2db['first_name'] = self.anlz_msg_txt.split("=")[1]
             self.per_dct_gdb_u['first_name'] = self.anlz_msg_txt.split("=")[1]
             self.sw_upd_crm = True
         #
         # "HOME="
         elif (any(ele in self.anlz_msg_txt.lower() for ele in dfu.lst_str_upd_hom_cmd) and
-            not (self.sw_fst_tm_crm_ins)):
+                  not (self.sw_fst_tm_crm_ins)):
             self.crm_data_2db['home_adr'] = self.anlz_msg_txt.split("=")[1]
             self.per_dct_gdb_u['home_adr'] = self.anlz_msg_txt.split("=")[1]
             self.sw_upd_crm = True
         #
         # "WORK="
         elif (any(ele in self.anlz_msg_txt.lower() for ele in dfu.lst_str_upd_wrk_cmd) and
-            not (self.sw_fst_tm_crm_ins)):
+                  not (self.sw_fst_tm_crm_ins)):
             self.crm_data_2db['work_adr'] = self.anlz_msg_txt.split("=")[1]
             self.per_dct_gdb_u['work_adr'] = self.anlz_msg_txt.split("=")[1]
             self.sw_upd_crm = True
@@ -465,36 +466,49 @@ class Msg():
 
         # 'daily' TIMING is on:
         if (self.dr_start < self.dr_now < self.dr_end and
-            0 < self.dr_now.weekday()+2 < 6):                   #starts from 0, 1st dow=monday
+                        0 < self.dr_now.weekday()+2 < 6):                   #starts from 0, 1st dow=monday
             # time interval reached?:
             if self.dr_now_prv < self.dr_now - timedelta(minutes=dfu.tm_delta_mm, seconds=dfu.tm_delta_ss):
                 self.cre_msg_txt_new, self.dr_rt_tm = self.calc_route(self.from_adrs, self.to_adrs)
-                # print int(self.dr_rt_tm)
 
                 # first time for cur day: prv(d)<>now(d) ==> first time only!
-                if (self.dr_now_prv.strftime('%D') != self.dr_now.strftime('%D') and
-                    self.dr_rt_tm > dfu.rt_tm_long ):
-                    self.dr_sw_warn_1 = True        # self.dr_warn_ts = self.dr_now
-                    # print int(self.dr_rt_tm)
+                if self.dr_now_prv.strftime('%D') != self.dr_now.strftime('%D'):
+                    self.dr_l_tms = [0, 0, 0]
+                    if self.dr_rt_tm > dfu.rt_tm_long:
+                        self.dr_sw_warn = True
+                        self.cre_msg_txt_new = 'FIRST WARNING!!! \n' + self.cre_msg_txt_new
 
-                # self.daily_dd___ = self.dt_tm_now_dd    # 're-updated' but only when daily 'occurs'
+                self.dr_l_tms.pop(0)                       # [1,2,3]-->[2,3]
+                self.dr_l_tms.append(self.dr_rt_tm)        # a.append(1)    [2,3]-->[2,3,4]
+                if self.dr_l_tms[0] != 0:
+                    if self.dr_l_tms[0] * dfu.jmp_prc < self.dr_l_tms[2]:
+                        self.dr_wrn_cnt += 1
+                        self.dr_sw_warn = True
+                        self.cre_msg_txt_new = 'WARNING!!!\n   WARNING!!!\n' + self.cre_msg_txt_new
 
-
-                    # if self.dr_rt_tm > self.dr_rt_tm_prv + 1.1:
-                    # print 'cur=', self.dr_rt_tm, '   prv=', self.dr_rt_tm_prv
-                    # self.dr_rt_tm_prv = self.dr_rt_tm
-
-                    #             # self.snd_msg(tokenbot.hi_auth_id_lst[0], Msg?.cre_msg_txt_new)
-                    #             self.daily_dd_done = datetime.now().strftime('%d')
-                    # if route_calc_warning_y
-                    #     r.snd_msg
 
             self.dr_now_prv = self.dr_now
 
-#
-# ___________________________________________________________________________
-# ___________________________________________________________________________
+
+
+
+                # self.daily_dd___ = self.dt_tm_now_dd    # 're-updated' but only when daily 'occurs'
+
+                # if self.dr_rt_tm > self.dr_rt_tm_prv + 1.1:
+                # print 'cur=', self.dr_rt_tm, '   prv=', self.dr_rt_tm_prv
+                # self.dr_rt_tm_prv = self.dr_rt_tm
+
+                #             # self.snd_msg(tokenbot.hi_auth_id_lst[0], Msg?.cre_msg_txt_new)
+                #             self.daily_dd_done = datetime.now().strftime('%d')
+                # if route_calc_warning_y
+                #     r.snd_msg
+
+
+    #
+    # ___________________________________________________________________________
+    # ___________________________________________________________________________
 def main():
+
     running = True
 
     logger.info(dfu.str_start)                  # reference for RESTARTING..
@@ -527,9 +541,9 @@ def main():
                 lst_id = str(r.lst_msg_id)
 
         m_dr.daily_route()
-        if m_dr.dr_sw_warn_1:
+        if m_dr.dr_sw_warn:
             r.snd_msg(m_dr.anlz_msg_cht_id, m_dr.cre_msg_txt_new)
-            m_dr.dr_sw_warn_1 = False
+            m_dr.dr_sw_warn = False
 
 
 #
