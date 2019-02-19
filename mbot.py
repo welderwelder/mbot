@@ -470,8 +470,14 @@ class Msg():
                         self.dr_now.weekday() not in [4,5]):           #starts from 0, 1st dow=monday
             # time interval reached?:
             if self.dr_now_prv < self.dr_now - timedelta(minutes=dfu.tm_delta_mm, seconds=dfu.tm_delta_ss):
-                self.cre_msg_txt_new, self.dr_rt_tm = self.calc_route(self.from_adrs, self.to_adrs)
-                print 'drb: ', int(self.dr_rt_tm), ' ', self.dr_now
+                try:
+                    self.cre_msg_txt_new, self.dr_rt_tm = self.calc_route(self.from_adrs, self.to_adrs)
+                    dr_l = 'drb: ' + str(int(self.dr_rt_tm)) + ' ' +str(self.dr_now)
+                    logger.info(dr_l)
+                except Exception as e:
+                    logger.info('dr_..calc')
+                    logger.info(e)
+
                 # first time for cur day: prv(d)<>now(d) ==> first time only!
                 if self.dr_now_prv.strftime('%D') != self.dr_now.strftime('%D'):
                     self.dr_l_tms = [0, 0, 0]
