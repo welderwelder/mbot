@@ -464,7 +464,7 @@ class Msg():
         self.dr_start = self.dr_now.replace(hour=dfu.dr_scdl_tm_start[0], minute=dfu.dr_scdl_tm_start[1])
         self.dr_end = self.dr_now.replace(hour=dfu.dr_scdl_tm_end[0], minute=dfu.dr_scdl_tm_end[1])
 
-        print self.dr_start, self.dr_now, self.dr_end, self.dr_now.weekday()
+        # print self.dr_start, self.dr_now, self.dr_end, self.dr_now.weekday()
         # 'daily' TIMING is on:
         if (self.dr_start < self.dr_now < self.dr_end and
                         self.dr_now.weekday() not in [4,5]):           #starts from 0, 1st dow=monday
