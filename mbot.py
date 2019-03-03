@@ -495,7 +495,9 @@ class Msg():
                         inc_prc = (self.dr_l_tms[2] - self.dr_l_tms[0]) / self.dr_l_tms[0] * 100
                         if inc_prc > 4:
                             inc_prc = " {:.2f}".format(inc_prc)
-                    dr_log = 'drb: ' + str(self.dr_l_tms) + str(inc_prc)
+                        else:
+                            inc_prc = ''
+                    dr_log = 'drb: ' + str(self.dr_l_tms) + inc_prc
                     logger.info(dr_log)
                     if self.dr_l_tms[0] * dfu.jmp_prc < self.dr_l_tms[2]:
                         self.dr_wrn_cnt += 1
