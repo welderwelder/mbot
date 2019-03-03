@@ -312,7 +312,10 @@ class Msg():
             elif len(self.anlz_msg_r_obj.photo) > 0:                # photo list always returned
                 self.p_msg_fid = self.anlz_msg_r_obj.photo[0]['file_id']
                 self.anlz_msg_txt = 'picture: ' + self.p_msg_fid
-
+            elif self.anlz_msg_r_obj.contact != None:
+                # print self.anlz_msg_r_obj.contact
+                self.msg_phone_num = self.anlz_msg_r_obj.contact['phone_number']
+                print self.msg_phone_num
     #
     def analyze_txt_in_msg(self):
         self.get_prsn_dtl()
@@ -472,8 +475,7 @@ class Msg():
             if self.dr_now_prv < self.dr_now - timedelta(minutes=dfu.tm_delta_mm, seconds=dfu.tm_delta_ss):
                 try:
                     self.cre_msg_txt_new, self.dr_rt_tm = self.calc_route(self.from_adrs, self.to_adrs)
-                    dr_log = 'drb: ' + str(int(self.dr_rt_tm)) + ' ' + str(self.dr_now) + str(self.dr_l_tms)
-                    logger.info(dr_log)
+                    # dr_log = 'drb: ' + str(int(self.dr_rt_tm)) + ' ' + str(self.dr_now) + str(self.dr_l_tms)
                 except Exception as e:
                     logger.info('dr_..calc')
                     logger.info(e)
@@ -486,8 +488,15 @@ class Msg():
                         self.cre_msg_txt_new = 'FIRST WARNING!!! \n' + self.cre_msg_txt_new
 
                 self.dr_l_tms.pop(0)                       # [1,2,3]-->[2,3]
-                self.dr_l_tms.append(self.dr_rt_tm)        # a.append(1)    [2,3]-->[2,3,4]
+                self.dr_l_tms.append(round(self.dr_rt_tm, 2))        # a.append(1)    [2,3]-->[2,3,4]
                 if self.dr_l_tms[0] != 0:
+                    inc_prc = ''
+                    if self.dr_l_tms[0] < self.dr_l_tms[2]:
+                        inc_prc = (self.dr_l_tms[2] - self.dr_l_tms[0]) / self.dr_l_tms[0] * 100
+                        if inc_prc > 4:
+                            inc_prc = " {:.2f}".format(inc_prc)
+                    dr_log = 'drb: ' + str(self.dr_l_tms) + inc_prc
+                    logger.info(dr_log)
                     if self.dr_l_tms[0] * dfu.jmp_prc < self.dr_l_tms[2]:
                         self.dr_wrn_cnt += 1
                         self.dr_sw_warn = True
