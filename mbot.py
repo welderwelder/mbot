@@ -500,7 +500,7 @@ class Msg():
                     dr_log = 'drb: ' + str(self.dr_l_tms) + inc_prc
                     logger.info(dr_log)
                     if self.dr_l_tms[0] * dfu.jmp_prc < self.dr_l_tms[2]:
-                        self.dr_wrn_cnt += 1
+                        # self.dr_wrn_cnt += 1          # not in init?==> abends "no attribute: dr_wrn_cnt"
                         self.dr_sw_warn = True
                         self.cre_msg_txt_new = 'WARNING!!!\n   WARNING!!!\n' + self.cre_msg_txt_new
 
