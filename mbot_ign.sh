@@ -24,6 +24,7 @@ if test -z "$chk_run";then
    dt=$(date +%y-%m-%d_%H:%M:%S)
   cp mbot_ign_run.log mbot_ign_run_$dt.log
   #echo 'empty, mbot is NOT running'
+  # originally error(!) --- 2>>&1 will do append !  mb2010
   python mbot.py 2>&1 | tee mbot_ign_run.log	# suppose to lo also ABEND
 #else
 #  echo $chk_run
